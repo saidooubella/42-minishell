@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 11:27:36 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/06 19:10:30 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/07 09:54:24 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,17 +217,6 @@ t_node	*variable_node_new(char *name)
 	return ((t_node *) node);
 }
 
-t_node	*nope_node_new(void)
-{
-	t_nope_node	*node;
-
-	node = malloc(sizeof(t_nope_node));
-	if (node == NULL)
-		memory_error();
-	node->header.type = NOPE_NODE;
-	return ((t_node *) node);
-}
-
 // ----------------------------------------------------
 
 t_node	*and_or_expression(t_parser *parser);
@@ -263,7 +252,7 @@ void	build_string_nodes(t_parser *parser, t_node **node)
 	else if (parser_is(parser, WORD))
 		new = word_node_new(parser_consume(parser)->lexeme);
 	else
-		error("Internal error in 'build_string_nodes'");
+		error("Internal error in 'build_string_nodes' %d", parser_current(parser)->type);
 	if (*node == NULL)
 		*node = new;
 	else
@@ -276,11 +265,11 @@ t_node	*string_expression(t_parser *parser)
 
 	parser->index += 1;
 	node = NULL;
-	while (!parser_reached_end(parser) && !parser_is(parser, DOUBLE_QUOTE))
+	while (!parser_reached_end(parser) && !parser_is(parser, C_DOUBLE_QUOTE))
 		build_string_nodes(parser, &node);
 	if (node == NULL)
 		node = word_node_new("");
-	if (parser_is(parser, DOUBLE_QUOTE))
+	if (parser_is(parser, C_DOUBLE_QUOTE))
 	{
 		parser->index++;
 		return (node);
@@ -289,24 +278,43 @@ t_node	*string_expression(t_parser *parser)
 	return (NULL);
 }
 
+t_node	*text_expression(t_parser *parser)
+{
+	if (parser_is(parser, WORD))
+		return (word_node_new(parser_consume(parser)->lexeme));
+	else if (parser_is(parser, O_DOUBLE_QUOTE))
+		return (string_expression(parser));
+	else if (parser_is(parser, DOLLAR))
+	{
+		parser->index++;
+		return (variable_node_new(parser_consume(parser)->lexeme));
+	}
+	error("Unexpected '%s', expected expression",
+		parser_current(parser)->lexeme);
+	return (NULL);
+}
+
+t_node	*concat_expression(t_parser *parser)
+{
+	t_node	*left;
+
+	left = text_expression(parser);
+	while (!parser_reached_end(parser) && (parser_is(parser, PLUS)))
+	{
+		parser->index++;
+		left = concat_node_new(left, text_expression(parser));
+	}
+	return (left);
+}
+
 t_node	*nodes_expression(t_parser *parser)
 {
 	t_node	*nodes;
 
 	nodes = nodes_new();
-	while (!parser_reached_end(parser) && (parser_is(parser, DOUBLE_QUOTE)
+	while (!parser_reached_end(parser) && (parser_is(parser, O_DOUBLE_QUOTE)
 			|| parser_is(parser, DOLLAR) || parser_is(parser, WORD)))
-	{
-		if (parser_is(parser, WORD))
-			nodes_add(nodes, word_node_new(parser_consume(parser)->lexeme));
-		else if (parser_is(parser, DOUBLE_QUOTE))
-			nodes_add(nodes, string_expression(parser));
-		else if (parser_is(parser, DOLLAR))
-		{
-			parser->index++;
-			nodes_add(nodes, variable_node_new(parser_consume(parser)->lexeme));
-		}
-	}
+		nodes_add(nodes, concat_expression(parser));
 	return (nodes);
 }
 
@@ -332,7 +340,7 @@ bool	is_redirection_operator(t_parser *parser)
 		|| parser_is(parser, LESS_THAN));
 }
 
-t_node	*redirection_operand(t_parser *parser, t_node *func(t_parser *, bool))
+t_node	*redirection_operand(t_parser *parser)
 {
 	if (parser_is(parser, DOUBLE_GREATER_THAN)
 		|| parser_is(parser, DOUBLE_AMPERSAND)
@@ -343,22 +351,21 @@ t_node	*redirection_operand(t_parser *parser, t_node *func(t_parser *, bool))
 		|| parser_is(parser, OPEN_PARENT)
 		|| parser_is(parser, LESS_THAN))
 		error("Unexpected '%s'", parser_current(parser)->lexeme);
-	return (func(parser, false));
+	return (concat_expression(parser));
 }
 
-t_node	*suffix_expression(t_parser *parser, bool optional)
+t_node	*suffix_expression(t_parser *parser)
 {
 	t_token	*operator;
 	t_node	*file_name;
 	t_node	*operand;
 
-	(void) optional;
 	operand = primary_expression(parser, is_redirection_operator(parser)
 			|| parser_is(parser, END_OF_FILE));
 	while (is_redirection_operator(parser))
 	{
 		operator = parser_consume(parser);
-		file_name = redirection_operand(parser, primary_expression);
+		file_name = redirection_operand(parser);
 		if (operator->type == DOUBLE_LESS_THAN)
 			operand = (heredoc_in_node_new(operator, file_name, operand));
 		else if (operator->type == DOUBLE_GREATER_THAN)
@@ -383,8 +390,8 @@ t_node	*prefix_expression(t_parser *parser)
 	if (is_redirection_operator(parser))
 	{
 		operator = parser_consume(parser);
-		file_name = redirection_operand(parser, suffix_expression);
-		operand = suffix_expression(parser, true);
+		file_name = redirection_operand(parser);
+		operand = prefix_expression(parser);
 		if (operator->type == DOUBLE_LESS_THAN)
 			return (heredoc_in_node_new(operator, file_name, operand));
 		if (operator->type == DOUBLE_GREATER_THAN)
@@ -393,21 +400,10 @@ t_node	*prefix_expression(t_parser *parser)
 			return (out_redirect_node_new(operator, file_name, operand));
 		if (operator->type == LESS_THAN)
 			return (in_redirect_node_new(operator, file_name, operand));
+		else
+			error("Internal error in 'prefix_expression'");
 	}
-	return (suffix_expression(parser, false));
-}
-
-t_node	*concat_expression(t_parser *parser)
-{
-	t_node	*left;
-
-	left = prefix_expression(parser);
-	while (!parser_reached_end(parser) && (parser_is(parser, PLUS)))
-	{
-		parser->index++;
-		left = concat_node_new(left, prefix_expression(parser));
-	}
-	return (left);
+	return (suffix_expression(parser));
 }
 
 t_node	*pipe_expression(t_parser *parser)
@@ -415,12 +411,12 @@ t_node	*pipe_expression(t_parser *parser)
 	t_token	*operator;
 	t_node	*left;
 
-	left = concat_expression(parser);
+	left = prefix_expression(parser);
 	while (!parser_reached_end(parser) && (parser_is(parser, PIPE)))
 	{
 		operator = parser_consume(parser);
 		left = pipe_node_new(left, operator,
-				concat_expression(parser));
+				prefix_expression(parser));
 	}
 	return (left);
 }
@@ -504,8 +500,6 @@ void	visit_node1(t_visitor_extra *extra, t_node *node)
 		extra->visitor->visit_and_node(extra, (t_and_node *) node);
 	else if (node->type == OR_NODE)
 		extra->visitor->visit_or_node(extra, (t_or_node *) node);
-	else if (node->type == NOPE_NODE)
-		extra->visitor->visit_nope_node(extra, (t_nope_node *) node);
 	else
 		error("Internal error in 'visit_node'");
 }
@@ -606,13 +600,6 @@ void	free_variable_node(
 	free(node);
 }
 
-void	free_nope_node(
-	t_visitor_extra *extra, t_nope_node *node)
-{
-	(void) extra;
-	free(node);
-}
-
 void	free_nodes(
 	t_visitor_extra *extra, t_nodes *node)
 {
@@ -643,7 +630,6 @@ t_visitor	*freeing_visitor(void)
 	visitor->visit_concat_node = free_concat_node;
 	visitor->visit_word_node = free_word_node;
 	visitor->visit_variable_node = free_variable_node;
-	visitor->visit_nope_node = free_nope_node;
 	visitor->visit_nodes = free_nodes;
 	return (visitor);
 }
@@ -712,13 +698,6 @@ void	visit_variable_node(
 	
 }
 
-void	visit_nope_node(
-	t_visitor_extra *extra, t_nope_node *node)
-{
-	(void) extra;
-	(void) node;
-}
-
 void	visit_nodes(
 	t_visitor_extra *extra, t_nodes *node)
 {
@@ -784,36 +763,45 @@ void	visualizer_pipe_node(
 void	visualizer_in_redirect_node(
 	t_visitor_extra *extra, t_in_redirect_node *node)
 {
+	printf("(");
 	printf("< ");
 	extra->visit(extra, node->file_name);
 	printf(" ");
 	extra->visit(extra, node->operand);
+	printf(")");
 }
 
 void	visualizer_out_redirect_node(
 	t_visitor_extra *extra, t_out_redirect_node *node)
 {
+	printf("(");
 	printf("> ");
 	extra->visit(extra, node->file_name);
 	printf(" ");
 	extra->visit(extra, node->operand);
+	printf(")");
 }
 
 void	visualizer_out_redirect_append_node(
 	t_visitor_extra *extra, t_out_redirect_append_node *node)
 {
+	printf("(");
 	printf(">> ");
 	extra->visit(extra, node->file_name);
+	printf(" ");
 	extra->visit(extra, node->operand);
+	printf(")");
 }
 
 void	visualizer_heredoc_in_node(
 	t_visitor_extra *extra, t_heredoc_in_node *node)
 {
+	printf("(");
 	printf("<< ");
 	extra->visit(extra, node->limiter);
 	printf(" ");
 	extra->visit(extra, node->operand);
+	printf(")");
 }
 
 void	visualizer_parenthesized_node(
@@ -845,14 +833,7 @@ void	visualizer_variable_node(
 	t_visitor_extra *extra, t_variable_node *node)
 {
 	(void) extra;
-	printf("%s", node->name);
-}
-
-void	visualizer_nope_node(
-	t_visitor_extra *extra, t_nope_node *node)
-{
-	(void) extra;
-	(void) node;
+	printf("$%s", node->name);
 }
 
 void	visualizer_nodes(
@@ -860,6 +841,8 @@ void	visualizer_nodes(
 {
 	size_t	index;
 
+	if (node->size == 0)
+		return ;
 	printf("(");
 	index = -1;
 	while (++index < node->size)
@@ -890,7 +873,6 @@ t_visitor	*visualizer_visitor(void)
 	visitor->visit_concat_node = visualizer_concat_node;
 	visitor->visit_word_node = visualizer_word_node;
 	visitor->visit_variable_node = visualizer_variable_node;
-	visitor->visit_nope_node = visualizer_nope_node;
 	visitor->visit_nodes = visualizer_nodes;
 	return (visitor);
 }

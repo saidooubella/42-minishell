@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 13:43:50 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/06 13:29:20 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/07 09:47:46 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,12 +17,24 @@
 #include "ft_printf.h"
 #include "lexer.h"
 
-static bool	is_special(t_token_type type)
+static bool	is_other_special(t_token_type type)
 {
 	if (type == DOUBLE_GREATER_THAN || type == DOUBLE_AMPERSAND
 		|| type == DOUBLE_LESS_THAN || type == OPEN_PARENT
 		|| type == CLOSE_PARENT || type == GREATER_THAN
-		|| type == DOUBLE_PIPE || type == END_OF_FILE)
+		|| type == DOUBLE_PIPE || type == END_OF_FILE
+		|| type == C_DOUBLE_QUOTE)
+		return (true);
+	return (false);
+}
+
+static bool	is_self_special(t_token_type type)
+{
+	if (type == DOUBLE_GREATER_THAN || type == DOUBLE_AMPERSAND
+		|| type == DOUBLE_LESS_THAN || type == OPEN_PARENT
+		|| type == CLOSE_PARENT || type == GREATER_THAN
+		|| type == DOUBLE_PIPE || type == END_OF_FILE
+		|| type == O_DOUBLE_QUOTE)
 		return (true);
 	return (false);
 }
@@ -32,8 +44,8 @@ void	tokens_smart_add(
 {
 	if (lexer->whitespace_start != 0
 		&& lexer->whitespace_end - lexer->whitespace_start == 0
-		&& !is_special(tokens->tokens[tokens->size - 1].type)
-		&& !is_special(type))
+		&& !is_self_special(tokens->tokens[tokens->size - 1].type)
+		&& !is_other_special(type))
 		tokens_add(tokens, string_duplicate("+"), PLUS);
 	tokens_add(tokens, lexeme, type);
 }

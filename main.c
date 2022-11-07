@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 11:01:21 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/06 17:58:39 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/07 09:41:21 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,9 +48,9 @@ int	main(void)
 		if (tokens->size > 1)
 		{
 			// TODO
-			// for (size_t i = 0; i < tokens->size; i++) {
-			// 	printf("%s|%d\n", tokens->tokens[i].lexeme, tokens->tokens[i].type);
-			// }
+			for (size_t i = 0; i < tokens->size; i++) {
+				printf("%s|%d\n", tokens->tokens[i].lexeme, tokens->tokens[i].type);
+			}
 			parser = parser_new(tokens);
 			node = parse(parser);
 

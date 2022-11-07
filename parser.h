@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/05 09:43:02 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/06 17:52:42 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/07 09:11:51 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,6 @@
 
 # include "tokens.h"
 # include "nodes.h"
-
-typedef struct s_nope_node
-{
-	t_node	header;
-}	t_nope_node;
 
 typedef struct s_and_node
 {
@@ -136,8 +131,6 @@ typedef struct s_visitor
 			t_visitor_extra *extra, t_word_node *node);
 	void	(*visit_variable_node)(
 			t_visitor_extra *extra, t_variable_node *node);
-	void	(*visit_nope_node)(
-			t_visitor_extra *extra, t_nope_node *node);
 	void	(*visit_nodes)(
 			t_visitor_extra *extra, t_nodes *node);
 }	t_visitor;

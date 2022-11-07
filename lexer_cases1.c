@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:28:08 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/06 13:11:50 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/07 09:45:37 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ void	lexer_tokenize_string(t_lexer *lexer, t_tokens *tokens)
 {
 	size_t	start;
 
-	lexer_tokenize_token(lexer, tokens, DOUBLE_QUOTE, 1);
+	lexer_tokenize_token(lexer, tokens, O_DOUBLE_QUOTE, 1);
 	start = lexer->index;
 	while (!lexer_reached_end(lexer) && lexer_current(lexer) != '"')
 	{
@@ -101,7 +101,7 @@ void	lexer_tokenize_string(t_lexer *lexer, t_tokens *tokens)
 		tokens_smart_add(lexer, tokens, substring(lexer->content,
 				start, lexer->index), WORD);
 	if (lexer_current(lexer) == '"')
-		lexer_tokenize_token(lexer, tokens, DOUBLE_QUOTE, 1);
+		lexer_tokenize_token(lexer, tokens, C_DOUBLE_QUOTE, 1);
 	else
 		printf("Error: unterminated string literal\n");
 }
