@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 11:01:21 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/08 14:46:01 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/08 16:15:43 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,12 +29,10 @@ void	command_node_free(t_command_node *node)
 
 	index = -1;
 	while (++index < node->redirections_size)
-		if (node->redirections[index].extra.freeable)
-			free(node->redirections[index].extra.value);
+		string_free(&node->redirections[index].extra);
 	index = -1;
 	while (++index < node->args_size)
-		if (node->args[index].freeable)
-			free(node->args[index].value);
+		string_free(&node->args[index]);
 	free(node->redirections);
 	free(node->args);
 	free(node);
@@ -119,7 +117,6 @@ int	main(int ac, char **av, char **env)
 			parser.index = 0;
 			parser.tokens = tokens;
 			node_free(parse(&parser));
-			printf("\n");
 		}
 		tokens_free(&tokens);
 		lexer_free(&lexer);

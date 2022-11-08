@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 10:58:25 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/08 14:31:11 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/08 16:14:13 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,5 +90,6 @@ typedef struct s_conjuction_node
 }	t_conjuction_node;
 
 t_node	*parse(t_parser *parser);
+void	string_free(t_string *string);
 
 #endif

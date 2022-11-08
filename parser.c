@@ -199,7 +199,6 @@ t_string	apply_concatenation(t_parser *parser)
 	t_string			temp;
 
 	builder = string_builder_new();
-	result = NULL;
 	temp = unit_expression(parser);
 	if (temp.value != NULL)
 	{
@@ -213,10 +212,9 @@ t_string	apply_concatenation(t_parser *parser)
 			(string_builder_append_cstring(builder, temp.value), string_free(&temp));
 		}
 	}
-	if (builder->size > 0)
-		result = string_builder_to_cstr(builder);
+	result = string_builder_to_cstr(builder);
 	string_builder_free(&builder);
-	return (string_create(result, result != NULL));
+	return (string_create(result, true));
 }
 
 t_node	*conjuction_expression(t_parser *parser);
@@ -243,60 +241,49 @@ t_node	*primary_expression(t_parser *parser)
 
 	if (parser_current_is(parser, OPEN_PARENT))
 	{
-		printf(" (");
 		left_parent = parser_consume(parser);
 		expression = conjuction_expression(parser);
 		right_parent = parser_expect(parser, CLOSE_PARENT, ")");
-		printf(" )");
 		return (parent_node_new(left_parent, expression, right_parent));
 	}
 	t_node	*command = command_node_new();
-	printf(" (");
-	while (true)
+	while (!parser_reached_end(parser))
 	{
 		if (parser_current_is(parser, DOUBLE_GREATER_THAN))
 		{
 			parser_consume(parser);
 			t_string	extra = redirection_operand(parser);
 			command_add_redirection(command, APPEND, extra);
-			printf(" >> %s", extra.value);
 		}
 		else if (parser_current_is(parser, DOUBLE_LESS_THAN))
 		{
 			parser_consume(parser);
 			t_string	extra = redirection_operand(parser);
 			command_add_redirection(command, HEREDOC, extra);
-			printf(" << %s", extra.value);
 		}
 		else if (parser_current_is(parser, GREATER_THAN))
 		{
 			parser_consume(parser);
 			t_string	extra = redirection_operand(parser);
 			command_add_redirection(command, OUTPUT, extra);
-			printf(" > %s", extra.value);
 		}
 		else if (parser_current_is(parser, LESS_THAN))
 		{
 			parser_consume(parser);
 			t_string	extra = redirection_operand(parser);
 			command_add_redirection(command, INPUT, extra);
-			printf(" < %s", extra.value);
 		}
 		else
 		{
 			t_string	arg = apply_concatenation(parser);
 			if (arg.value == NULL)
-			{
-				if (((t_command_node *) command)->redirections_size == 0
-					&& ((t_command_node *) command)->args_size == 0)
-					error("Unexpected '%s'", parser_consume(parser)->lexeme);
 				break ;
-			}
-			printf(" %s", arg.value);
 			command_add_arg(command, arg);
 		}
 	}
-	printf(" )");
+	if (((t_command_node *) command)->redirections_size == 0
+		&& ((t_command_node *) command)->args_size == 0)
+		error("Unexpected '%s'", parser_consume(parser)->lexeme);
 	return (command);
 }
 
@@ -305,15 +292,12 @@ t_node	*pipeline_expression(t_parser *parser)
 	t_token	*operator;
 	t_node	*left;
 
-	printf(" (");
 	left = primary_expression(parser);
 	while (!parser_reached_end(parser) && parser_current_is(parser, PIPE))
 	{
 		operator = parser_consume(parser);
-		printf(" %s", operator->lexeme);
 		left = pipe_node_new(left, operator, primary_expression(parser));
 	}
-	printf(" )");
 	return (left);
 }
 
@@ -322,15 +306,12 @@ t_node	*conjuction_expression(t_parser *parser)
 	t_token	*operator;
 	t_node	*left;
 
-	printf(" (");
 	left = pipeline_expression(parser);
 	while (!parser_reached_end(parser) && (parser_current_is(parser, DOUBLE_AMPERSAND) || parser_current_is(parser, DOUBLE_PIPE)))
 	{
 		operator = parser_consume(parser);
-		printf(" %s", operator->lexeme);
 		left = conjuction_node_new(left, operator, pipeline_expression(parser));
 	}
-	printf(" )");
 	return (left);
 }
 
