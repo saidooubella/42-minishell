@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 13:43:50 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/07 09:47:46 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/08 13:24:23 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ static bool	is_other_special(t_token_type type)
 		|| type == DOUBLE_LESS_THAN || type == OPEN_PARENT
 		|| type == CLOSE_PARENT || type == GREATER_THAN
 		|| type == DOUBLE_PIPE || type == END_OF_FILE
-		|| type == C_DOUBLE_QUOTE)
+		|| type == CLOSE_DOUBLE_QUOTE)
 		return (true);
 	return (false);
 }
@@ -34,7 +34,7 @@ static bool	is_self_special(t_token_type type)
 		|| type == DOUBLE_LESS_THAN || type == OPEN_PARENT
 		|| type == CLOSE_PARENT || type == GREATER_THAN
 		|| type == DOUBLE_PIPE || type == END_OF_FILE
-		|| type == O_DOUBLE_QUOTE)
+		|| type == OPEN_DOUBLE_QUOTE || type == DOLLAR)
 		return (true);
 	return (false);
 }

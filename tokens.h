@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:22:45 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/07 09:44:21 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/08 09:38:46 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,8 @@ typedef enum e_token_type
 	DOUBLE_AMPERSAND,
 	DOUBLE_LESS_THAN,
 	CLOSE_PARENT,
-	O_DOUBLE_QUOTE,
-	C_DOUBLE_QUOTE,
+	OPEN_DOUBLE_QUOTE,
+	CLOSE_DOUBLE_QUOTE,
 	GREATER_THAN,
 	DOUBLE_PIPE,
 	END_OF_FILE,

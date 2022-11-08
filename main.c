@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 11:01:21 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/07 09:41:21 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/08 14:46:01 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,28 +16,91 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+#include "interpreter.h"
 #include "parser.h"
 #include "lexer.h"
+#include "utils.h"
+
+void	node_free(t_node *node);
+
+void	command_node_free(t_command_node *node)
+{
+	size_t	index;
+
+	index = -1;
+	while (++index < node->redirections_size)
+		if (node->redirections[index].extra.freeable)
+			free(node->redirections[index].extra.value);
+	index = -1;
+	while (++index < node->args_size)
+		if (node->args[index].freeable)
+			free(node->args[index].value);
+	free(node->redirections);
+	free(node->args);
+	free(node);
+}
+
+void	parent_node_free(t_parent_node *node)
+{
+	size_t	index;
+
+	index = -1;
+	node_free(node->expression);
+	free(node);
+}
+
+void	pipe_node_free(t_pipe_node *node)
+{
+	size_t	index;
+
+	index = -1;
+	node_free(node->right);
+	node_free(node->left);
+	free(node);
+}
+
+void	conjuction_node_free(t_conjuction_node *node)
+{
+	size_t	index;
+
+	index = -1;
+	node_free(node->right);
+	node_free(node->left);
+	free(node);
+}
+
+void	node_free(t_node *node)
+{
+	if (node->type == COMMAND_NODE)
+		command_node_free((t_command_node *) node);
+	else if (node->type == PARENTHESES_NODE)
+		parent_node_free((t_parent_node *) node);
+	else if (node->type == PIPELINE_NODE)
+		pipe_node_free((t_pipe_node *) node);
+	else if (node->type == CONJUCTION_NODE)
+		conjuction_node_free((t_conjuction_node *) node);
+	else
+		error("Illegal state in 'node_free'");
+}
 
 void	check_leaks(void)
 {
 	system("leaks minishell");
 }
 
-int	main(void)
+int	main(int ac, char **av, char **env)
 {
 	t_tokens	*tokens;
 	t_lexer		*lexer;
-	t_node		*node;
-	t_parser	*parser;
 	char		*line;
 
 	atexit(check_leaks); // TODO - Remove this
+	
+	t_environment environment;
+	environment.env = env;
 
-	t_visitor *free_visitor = freeing_visitor();
-	t_visitor *printer_visitor = visualizer_visitor();
-	// t_visitor *visiter_visitor = interpreter_visitor();
-
+	(void) ac;
+	(void) av;
 	while (true)
 	{
 		line = readline("$> ");
@@ -45,27 +108,22 @@ int	main(void)
 			break ;
 		lexer = lexer_new(line);
 		tokens = lexer_tokenize(lexer);
+		add_history(line);
 		if (tokens->size > 1)
 		{
 			// TODO
 			for (size_t i = 0; i < tokens->size; i++) {
 				printf("%s|%d\n", tokens->tokens[i].lexeme, tokens->tokens[i].type);
 			}
-			parser = parser_new(tokens);
-			node = parse(parser);
-
-			visit_node(printer_visitor, node);
+			t_parser	parser;
+			parser.index = 0;
+			parser.tokens = tokens;
+			node_free(parse(&parser));
 			printf("\n");
-			visit_node(free_visitor, node);
-			parser_free(&parser);
 		}
 		tokens_free(&tokens);
 		lexer_free(&lexer);
 	}
-
-	visitor_free(&printer_visitor);
-	visitor_free(&free_visitor);
-	// visitor_free(&visiter_visitor);
 }
 
 /*

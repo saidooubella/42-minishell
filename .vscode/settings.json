@@ -1,0 +1,10 @@
+{
+	"files.associations": {
+		"parser.h": "c",
+		"interpreter.h": "c",
+		"lexer.h": "c",
+		"string_builder.h": "c",
+		"utils.h": "c",
+		"string.h": "c"
+	}
+}
