@@ -15,7 +15,7 @@ OBJS=$(SRCS:.c=.o)
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CC) -lreadline $^ -o $@
+	$(CC) -lreadline -fsanitize=address $^ -o $@
 
 %.o: %.c $(HEADERS)
 	$(CC) $(FLAGS) -c $< -o $@

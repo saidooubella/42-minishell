@@ -79,7 +79,7 @@ t_node	*command_node_new()
 		memory_error();
 	node->redirections_size = 0;
 	node->redirections_cap = 16;
-	node->args = malloc(sizeof(char *) * 16);
+	node->args = malloc(sizeof(t_string) * 16);
 	if (node->args == NULL)
 		memory_error();
 	node->args_size = 0;
@@ -90,8 +90,8 @@ t_node	*command_node_new()
 void	command_add_arg(t_node	*_node, t_string arg)
 {
 	t_command_node	*node;
-	size_t			new_capacity;
 	t_string		*new_args;
+	size_t			new_capacity;
 
 	node = (t_command_node *) _node;
 	if (node->args_size + 1 >= node->args_cap)
@@ -192,7 +192,7 @@ t_string	unit_expression(t_parser *parser)
 	return (string_create(NULL, false));
 }
 
-t_string	apply_concatenation(t_parser *parser)
+t_string	concatenation_expression(t_parser *parser)
 {
 	t_string_builder	*builder;
 	char				*result;
@@ -230,7 +230,7 @@ t_string	redirection_operand(t_parser *parser)
 		|| parser_current_is(parser, OPEN_PARENT)
 		|| parser_current_is(parser, LESS_THAN))
 		error("Unexpected '%s'", parser_consume(parser)->lexeme);
-	return (apply_concatenation(parser));
+	return (concatenation_expression(parser));
 }
 
 t_node	*primary_expression(t_parser *parser)
@@ -249,6 +249,7 @@ t_node	*primary_expression(t_parser *parser)
 	t_node	*command = command_node_new();
 	while (!parser_reached_end(parser))
 	{
+		printf(">> %s\n", parser->tokens->tokens[parser->index].lexeme);
 		if (parser_current_is(parser, DOUBLE_GREATER_THAN))
 		{
 			parser_consume(parser);
@@ -273,13 +274,15 @@ t_node	*primary_expression(t_parser *parser)
 			t_string	extra = redirection_operand(parser);
 			command_add_redirection(command, INPUT, extra);
 		}
-		else
+		else if (parser_current_is(parser, WORD)
+				|| parser_current_is(parser, OPEN_DOUBLE_QUOTE)
+				|| parser_current_is(parser, DOLLAR))
 		{
-			t_string	arg = apply_concatenation(parser);
-			if (arg.value == NULL)
-				break ;
+			t_string	arg = concatenation_expression(parser);
 			command_add_arg(command, arg);
 		}
+		else
+			break ;
 	}
 	if (((t_command_node *) command)->redirections_size == 0
 		&& ((t_command_node *) command)->args_size == 0)
