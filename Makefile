@@ -35,7 +35,9 @@ install-readline:
 
 check: all fclean
 
-run: all clean
+run:
+	make all
+	make clean
 	./minishell
 
 .PHONY: all clean fclean re install-readline

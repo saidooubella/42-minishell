@@ -1,5 +1,6 @@
+!Makefile
+!*.c
+!*.h
 .vscode
 .idea
-*.o
-*.d
 minishell

@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:42:13 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/08 10:52:40 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/08 18:18:16 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,12 @@
 # include <stdbool.h>
 # include <stddef.h>
 
+char	**string_split(char *string, char sep);
 char	*substring(char *string, size_t start, size_t end);
 bool	string_contains(char const *s1, char ch);
 char	*string_duplicate(char *s1);
 size_t	string_length(const char *string);
+int		string_compare(const char *s1, const char *s2, size_t n);
+int		string_equals(char *s1, char *s2);
 
 #endif

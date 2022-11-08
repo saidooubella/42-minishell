@@ -66,7 +66,7 @@ t_node	*conjuction_node_new(t_node *left, t_token *operator, t_node *right)
 	return ((t_node *) node);
 }
 
-t_node	*command_node_new()
+t_node	*command_node_new(void)
 {
 	t_command_node *node;
 
@@ -105,8 +105,7 @@ void	command_add_arg(t_node	*_node, t_string arg)
 		node->args_cap = new_capacity;
 		node->args = new_args;
 	}
-	node->args[node->args_size].freeable = arg.freeable;
-	node->args[node->args_size].value = arg.value;
+	node->args[node->args_size] = arg;
 	node->args_size++;
 }
 

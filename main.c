@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 11:01:21 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/08 16:15:43 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/08 18:54:19 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+#include "string_utils.h"
 #include "interpreter.h"
 #include "parser.h"
 #include "lexer.h"
@@ -93,9 +94,21 @@ int	main(int ac, char **av, char **env)
 	char		*line;
 
 	atexit(check_leaks); // TODO - Remove this
-	
+
 	t_environment environment;
-	environment.env = env;
+	environment.symbols = NULL;
+	environment.symbols_size = 0;
+	environment.symbols_cap = 0;
+
+	while (*env)
+	{
+		char **splitted = string_split(*env++, '=');
+		t_symbol symbol;
+		symbol.name = splitted[0];
+		symbol.value = splitted[1];
+		env_put_var(&environment, symbol);
+		free(splitted);
+	}
 
 	(void) ac;
 	(void) av;
@@ -124,6 +137,8 @@ int	main(int ac, char **av, char **env)
 }
 
 /*
+
+	// NOTE - ARGS ARE CASE INSENSETIVE
 
 	// TODO   - U HAVE TWO MEMCPY AND SOME PRINTF CALLS IN UR CODE U GOTTA REMOVE 'EM
 
