@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:41:23 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/08 18:19:01 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/09 13:44:50 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,33 @@
 
 #include "string_utils.h"
 #include "utils.h"
+
+static char	*append(char *s1, char const *s2)
+{
+	while (*s2)
+		*s1++ = *s2++;
+	return (s1);
+}
+
+char	*string_join(char const *s1, char const *s2)
+{
+	size_t	size;
+	char	*res;
+
+	size = string_length(s1) + string_length(s2);
+	res = malloc(size + 1);
+	if (res == 0)
+		error("Out of memory");
+	*append(append(res, s1), s2) = 0;
+	return (res);
+}
+
+int	to_lower(int ch)
+{
+	if ('A' <= ch && ch <= 'Z')
+		return (ch + 32);
+	return (ch);
+}
 
 int	string_compare(const char *s1, const char *s2, size_t n)
 {
@@ -121,6 +148,8 @@ size_t	string_length(const char *string)
 {
 	size_t	length;
 
+	if (string == NULL)
+		return (0);
 	length = -1;
 	while (string[++length])
 		;

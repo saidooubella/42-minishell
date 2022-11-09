@@ -4,25 +4,10 @@
 #include <stdio.h>
 
 #include "string_builder.h"
+#include "interpreter.h"
 #include "tokens.h"
 #include "parser.h"
 #include "utils.h"
-
-t_string	string_create(char *value, bool freeable)
-{
-	t_string	string;
-
-	string.freeable = freeable;
-	string.value = value;
-	return (string);
-}
-
-void	string_free(t_string *string)
-{
-	if (string->freeable)
-		free(string->value);
-	string->value = NULL;
-}
 
 t_node	*parent_node_new(t_token *left_parent, t_node *expression, t_token *right_parent)
 {
@@ -151,20 +136,17 @@ t_token	*parser_expect(t_parser *parser, t_token_type type, char *expected)
 {
 	if (parser_current_is(parser, type))
 		return parser_consume(parser);
-	error("Expected '%s' but got '%s", expected, parser_consume(parser)->lexeme);
+	error("Error: Expected '%s' but got '%s", expected, parser_consume(parser)->lexeme);
 	return (NULL);
 }
 
-char	*resolve_variable(char *name)
-{
-	return (name);
-}
-
-t_string	unit_expression(t_parser *parser)
+t_string	unit_expression(t_parser *parser, bool expand)
 {
 	t_string_builder	*builder;
+	t_token				*dollar;
 	char				*result;
 
+	(void) expand;
 	if (parser_current_is(parser, WORD))
 		return (string_create(parser_consume(parser)->lexeme, false));
 	if (parser_current_is(parser, OPEN_DOUBLE_QUOTE))
@@ -175,8 +157,19 @@ t_string	unit_expression(t_parser *parser)
 		{
 			if (parser_current_is(parser, WORD))
 				string_builder_append_cstring(builder, parser_consume(parser)->lexeme);
-			else if (parser_expect(parser, DOLLAR, "$"))
-				string_builder_append_cstring(builder, resolve_variable(parser_consume(parser)->lexeme));
+			else if (parser_current_is(parser, DOLLAR))
+			{
+				dollar = parser_consume(parser);
+				if (expand)
+					string_builder_append_cstring(builder, env_get_var(parser->env, parser_consume(parser)->lexeme, ""));
+				else
+				{
+					string_builder_append_cstring(builder, dollar->lexeme);
+					string_builder_append_cstring(builder, parser_consume(parser)->lexeme);
+				}
+			}
+			else
+				error("Error: Illegal state in 'unit_expression'");
 		}
 		parser_expect(parser, CLOSE_DOUBLE_QUOTE, "\"");
 		result = string_builder_to_cstr(builder);
@@ -185,27 +178,29 @@ t_string	unit_expression(t_parser *parser)
 	}
 	if (parser_current_is(parser, DOLLAR))
 	{
-		parser_consume(parser);
-		return (string_create(resolve_variable(parser_consume(parser)->lexeme), false));
+		dollar = parser_consume(parser);
+		if (expand)
+			return (string_create(env_get_var(parser->env, parser_consume(parser)->lexeme, ""), false));
+		return (string_create(string_join(dollar->lexeme, parser_consume(parser)->lexeme), true));
 	}
 	return (string_create(NULL, false));
 }
 
-t_string	concatenation_expression(t_parser *parser)
+t_string	concatenation_expression(t_parser *parser, bool expand)
 {
 	t_string_builder	*builder;
 	char				*result;
 	t_string			temp;
 
 	builder = string_builder_new();
-	temp = unit_expression(parser);
+	temp = unit_expression(parser, expand);
 	if (temp.value != NULL)
 	{
 		(string_builder_append_cstring(builder, temp.value), string_free(&temp));
 		while (!parser_reached_end(parser) && parser_current_is(parser, PLUS))
 		{
 			parser_consume(parser);
-			temp = unit_expression(parser);
+			temp = unit_expression(parser, expand);
 			if (temp.value == NULL)
 				break ;
 			(string_builder_append_cstring(builder, temp.value), string_free(&temp));
@@ -218,7 +213,7 @@ t_string	concatenation_expression(t_parser *parser)
 
 t_node	*conjuction_expression(t_parser *parser);
 
-t_string	redirection_operand(t_parser *parser)
+t_string	redirection_operand(t_parser *parser, bool expand)
 {
 	if (parser_current_is(parser, DOUBLE_GREATER_THAN)
 		|| parser_current_is(parser, DOUBLE_AMPERSAND)
@@ -228,8 +223,8 @@ t_string	redirection_operand(t_parser *parser)
 		|| parser_current_is(parser, DOUBLE_PIPE)
 		|| parser_current_is(parser, OPEN_PARENT)
 		|| parser_current_is(parser, LESS_THAN))
-		error("Unexpected '%s'", parser_consume(parser)->lexeme);
-	return (concatenation_expression(parser));
+		error("Error: Unexpected '%s', expected a word", parser_consume(parser)->lexeme);
+	return (concatenation_expression(parser, expand));
 }
 
 t_node	*primary_expression(t_parser *parser)
@@ -248,36 +243,35 @@ t_node	*primary_expression(t_parser *parser)
 	t_node	*command = command_node_new();
 	while (!parser_reached_end(parser))
 	{
-		printf(">> %s\n", parser->tokens->tokens[parser->index].lexeme);
 		if (parser_current_is(parser, DOUBLE_GREATER_THAN))
 		{
 			parser_consume(parser);
-			t_string	extra = redirection_operand(parser);
+			t_string	extra = redirection_operand(parser, true);
 			command_add_redirection(command, APPEND, extra);
 		}
 		else if (parser_current_is(parser, DOUBLE_LESS_THAN))
 		{
 			parser_consume(parser);
-			t_string	extra = redirection_operand(parser);
+			t_string	extra = redirection_operand(parser, false);
 			command_add_redirection(command, HEREDOC, extra);
 		}
 		else if (parser_current_is(parser, GREATER_THAN))
 		{
 			parser_consume(parser);
-			t_string	extra = redirection_operand(parser);
+			t_string	extra = redirection_operand(parser, true);
 			command_add_redirection(command, OUTPUT, extra);
 		}
 		else if (parser_current_is(parser, LESS_THAN))
 		{
 			parser_consume(parser);
-			t_string	extra = redirection_operand(parser);
+			t_string	extra = redirection_operand(parser, true);
 			command_add_redirection(command, INPUT, extra);
 		}
 		else if (parser_current_is(parser, WORD)
 				|| parser_current_is(parser, OPEN_DOUBLE_QUOTE)
 				|| parser_current_is(parser, DOLLAR))
 		{
-			t_string	arg = concatenation_expression(parser);
+			t_string	arg = concatenation_expression(parser, true);
 			command_add_arg(command, arg);
 		}
 		else
@@ -285,7 +279,7 @@ t_node	*primary_expression(t_parser *parser)
 	}
 	if (((t_command_node *) command)->redirections_size == 0
 		&& ((t_command_node *) command)->args_size == 0)
-		error("Unexpected '%s'", parser_consume(parser)->lexeme);
+		error("Error: Unexpected '%s'", parser_consume(parser)->lexeme);
 	return (command);
 }
 

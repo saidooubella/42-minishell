@@ -6,25 +6,22 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 10:58:25 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/08 16:55:57 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/09 14:40:19 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PARSER_H
 # define PARSER_H
 
+# include "interpreter.h"
 # include "tokens.h"
-
-typedef	struct s_string
-{
-	char	*value;
-	bool	freeable;
-}	t_string;
+# include "string.h"
 
 typedef struct s_parser
 {
-	t_tokens	*tokens;
-	size_t		index;
+	t_environment	*env;
+	t_tokens		*tokens;
+	size_t			index;
 }	t_parser;
 
 typedef enum e_node_type
@@ -89,7 +86,6 @@ typedef struct s_conjuction_node
 	t_node	*right;
 }	t_conjuction_node;
 
-t_node	*parse(t_parser *parser);
-void	string_free(t_string *string);
+t_node		*parse(t_parser *parser);
 
 #endif

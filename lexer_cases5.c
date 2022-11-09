@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:35:47 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/05 17:30:59 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/09 12:52:56 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ void	lexer_tokenize_parenthesize(t_lexer *lexer, t_tokens *tokens)
 	else if (lexer_current(lexer) == ')')
 		lexer_tokenize_token(lexer, tokens, CLOSE_PARENT, 1);
 	else
-		error("Internal error in 'lexer_tokenize_parenthesize'");
+		error("Error: Illegal state in 'lexer_tokenize_parenthesize'");
 }
 
 bool	is_parenthesize(t_lexer *lexer)

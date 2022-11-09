@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 13:43:50 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/08 13:24:23 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/09 12:53:16 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,6 @@ void	error(char *fmt, ...)
 {
 	va_list	args;
 
-	write(STDERR_FILENO, "Error: ", 7);
 	va_start(args, fmt);
 	ft_printf_raw(STDERR_FILENO, fmt, args);
 	va_end(args);

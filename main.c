@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 11:01:21 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/08 18:54:19 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/09 14:13:58 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,10 +30,17 @@ void	command_node_free(t_command_node *node)
 
 	index = -1;
 	while (++index < node->redirections_size)
+	{
+		if (index > 0) printf(" ");
+		printf("%d %s", node->redirections[index].type, node->redirections[index].extra.value);
 		string_free(&node->redirections[index].extra);
+	}
 	index = -1;
 	while (++index < node->args_size)
+	{
+		printf(" %s", node->args[index].value);
 		string_free(&node->args[index]);
+	}
 	free(node->redirections);
 	free(node->args);
 	free(node);
@@ -44,7 +51,9 @@ void	parent_node_free(t_parent_node *node)
 	size_t	index;
 
 	index = -1;
+	printf("(");
 	node_free(node->expression);
+	printf(")");
 	free(node);
 }
 
@@ -53,8 +62,11 @@ void	pipe_node_free(t_pipe_node *node)
 	size_t	index;
 
 	index = -1;
+	printf("(");
 	node_free(node->right);
+	printf(" %s ", node->operator->lexeme);
 	node_free(node->left);
+	printf(")");
 	free(node);
 }
 
@@ -63,8 +75,11 @@ void	conjuction_node_free(t_conjuction_node *node)
 	size_t	index;
 
 	index = -1;
+	printf("(");
 	node_free(node->right);
+	printf(" %s ", node->operator->lexeme);
 	node_free(node->left);
+	printf(")");
 	free(node);
 }
 
@@ -79,7 +94,7 @@ void	node_free(t_node *node)
 	else if (node->type == CONJUCTION_NODE)
 		conjuction_node_free((t_conjuction_node *) node);
 	else
-		error("Illegal state in 'node_free'");
+		error("Error: Illegal state in 'node_free'");
 }
 
 void	check_leaks(void)
@@ -95,24 +110,11 @@ int	main(int ac, char **av, char **env)
 
 	atexit(check_leaks); // TODO - Remove this
 
-	t_environment environment;
-	environment.symbols = NULL;
-	environment.symbols_size = 0;
-	environment.symbols_cap = 0;
-
-	while (*env)
-	{
-		char **splitted = string_split(*env++, '=');
-		t_symbol symbol;
-		symbol.name = splitted[0];
-		symbol.value = splitted[1];
-		env_put_var(&environment, symbol);
-		free(splitted);
-	}
+	t_environment *environment = environment_new(env);
 
 	(void) ac;
 	(void) av;
-	while (true)
+	while (environment->running)
 	{
 		line = readline("$> ");
 		if (line == NULL)
@@ -129,11 +131,14 @@ int	main(int ac, char **av, char **env)
 			t_parser	parser;
 			parser.index = 0;
 			parser.tokens = tokens;
+			parser.env = environment;
 			node_free(parse(&parser));
+			printf("\n");
 		}
 		tokens_free(&tokens);
 		lexer_free(&lexer);
 	}
+	environment_free(&environment);
 }
 
 /*

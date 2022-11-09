@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:28:08 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/08 15:16:20 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/09 14:42:03 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ void	lexer_tokenize_identifier(t_lexer *lexer, t_tokens *tokens)
 	{
 		lexer->index++;
 		tokens_smart_add(lexer, tokens, substring(lexer->content,
-				start, lexer->index), EXIT_CODE_VARIABLE);
+				start, lexer->index), VARIABLE);
 	}
 	else
 	{
