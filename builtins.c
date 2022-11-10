@@ -8,28 +8,34 @@
 #include "ft_printf.h"
 #include "parser.h"
 
-int	echo_builtin(t_environment *env, int argc, char **argv)
+int	echo_builtin(t_environment *env, size_t argc, t_string *argv)
 {
-	bool	no_new_line;
-	size_t	index;
+	bool	new_line;
+	size_t	start;
+	size_t	cont;
 
 	(void) env;
-	no_new_line = false;
-	index = 0;
-	while (++index < argc)
+	new_line = true;
+	start = 0;
+	while (++start < argc)
 	{
-		if (!string_equals(argv[index], "-n"))
+		if (!string_equals(argv[start].value, "-n"))
 			break;
-		no_new_line = true;
+		new_line = false;
 	}
-	while (++index < argc)
-		ft_printf(STDOUT_FILENO, "%s", argv[index]);
-	if (!no_new_line)
+	cont = start - 1;
+	while (++cont < argc)
+	{
+		if (cont > start)
+			ft_printf(STDOUT_FILENO, " ");
+		ft_printf(STDOUT_FILENO, "%s", argv[cont].value);
+	}
+	if (new_line)
 		ft_printf(STDOUT_FILENO, "\n");
 	return (0);
 }
 
-int	cd_builtin(t_environment *env, int argc, char **argv)
+int	cd_builtin(t_environment *env, size_t argc, t_string *argv)
 {
 	char	*target;
 
@@ -44,7 +50,7 @@ int	cd_builtin(t_environment *env, int argc, char **argv)
 	}
 	else
 	{
-		target = argv + 1;
+		target = argv[1].value;
 		if (access(target, F_OK) != 0)
 		{
 			ft_printf(STDERR_FILENO, "cd: no such file or directory: %s\n", target);
@@ -56,15 +62,17 @@ int	cd_builtin(t_environment *env, int argc, char **argv)
 	return (0);
 }
 
-int	pwd_builtin(t_environment *env, int argc, char **argv)
+int	pwd_builtin(t_environment *env, size_t argc, t_string *argv)
 {
+	(void) argc;
+	(void) argv;
 	ft_printf(STDOUT_FILENO, "%s\n", env->working_dir.value);
 	return (0);
 }
 
-size_t	string_index_of(char *string, char target)
+static ssize_t	string_index_of(char *string, char target)
 {
-	size_t	index;
+	ssize_t	index;
 
 	index = 0;
 	while (string[index])
@@ -76,7 +84,7 @@ size_t	string_index_of(char *string, char target)
 	return (-1);
 }
 
-bool	validate_name(char *identifier)
+static bool	validate_name(char *identifier)
 {
 	size_t	length;
 
@@ -91,29 +99,31 @@ bool	validate_name(char *identifier)
 	return (true);
 }
 
-int	export_builtin(t_environment *env, int argc, char **argv)
+int	export_builtin(t_environment *env, size_t argc, t_string *argv)
 {
 	t_symbol	symbol;
-	size_t		result;
+	ssize_t		result;
 	size_t		index;
 
 	index = 0;
 	while (++index < argc)
 	{
-		result = string_index_of(argv[index], '=');
-		if (result != -1)
+		result = string_index_of(argv[index].value, '=');
+		if (result != -1 && argv[index].value[0] != '=')
 		{
-			symbol.name = string_create(substring(argv[index], 0, result), true);
-			symbol.value = string_create(substring(argv[index], result + 1, string_length(argv[index])), true);
+			symbol.name = string_create(substring(argv[index].value, 0, result), true);
+			symbol.value = string_create(substring(argv[index].value, result + 1, string_length(argv[index].value)), true);
 		}
 		else
 		{
-			symbol.name = string_create(argv[index], false);
+			symbol.name = string_create(argv[index].value, false);
 			symbol.value = string_create(NULL, false);
 		}
 		if (!validate_name(symbol.name.value))
 		{
-			ft_printf(STDERR_FILENO, "export: '%s': not a valid identifier\n", symbol.name.value);
+			ft_printf(STDERR_FILENO, "export: '%s': not a valid identifier\n", argv[index].value);
+			string_free(&symbol.value);
+			string_free(&symbol.name);
 			return (1);
 		}
 		env_put_var(env, symbol);
@@ -121,21 +131,22 @@ int	export_builtin(t_environment *env, int argc, char **argv)
 	return (0);
 }
 
-int	unset_builtin(t_environment *env, int argc, char **argv)
+int	unset_builtin(t_environment *env, size_t argc, t_string *argv)
 {
 	size_t	index;
 
 	index = 0;
 	while (++index < argc)
-		env_remove_var(env, argv[index]);
+		env_remove_var(env, argv[index].value);
 	return (0);
 }
 
-int	env_builtin(t_environment *env, int argc, char **argv)
+int	env_builtin(t_environment *env, size_t argc, t_string *argv)
 {
 	size_t		index;
 	t_symbol	symbol;
 
+	(void) argv;
 	if (argc > 1)
 	{
 		ft_printf(STDERR_FILENO, "env: too many arguments\n");
@@ -150,8 +161,10 @@ int	env_builtin(t_environment *env, int argc, char **argv)
 	return (0);
 }
 
-int	exit_builtin(t_environment *env, int argc, char **argv)
+int	exit_builtin(t_environment *env, size_t argc, t_string *argv)
 {
+	(void) argc;
+	(void) argv;
 	env->running = false;
 	return (0);
 }

@@ -6,10 +6,10 @@ NAME=minishell
 SRCS=lexer_cases5.c lexer_cases6.c lexer_utils.c main.c string_builder1.c string_builder2.c \
 tokens.c utils.c ft_char_print_utils.c ft_number_print_utils.c ft_printf.c lexer1.c lexer2.c \
 lexer_cases1.c lexer_cases2.c lexer_cases3.c lexer_cases4.c string_utils.c interpreter.c parser.c \
-string.c
+string.c nodes.c builtins.c get_next_line.c
 
 HEADERS=lexer.h lexer_cases.h lexer_utils.h string_builder.h string_utils.h tokens.h utils.h \
-ft_printf.h interpreter.h parser.h string.h
+ft_printf.h interpreter.h parser.h string.h nodes.h builtins.h get_next_line.h
 
 OBJS=$(SRCS:.c=.o)
 

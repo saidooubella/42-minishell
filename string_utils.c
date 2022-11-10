@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:41:23 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/09 13:44:50 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/10 15:15:56 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@
 
 static char	*append(char *s1, char const *s2)
 {
+	if (s2 == NULL)
+		return (s1);
 	while (*s2)
 		*s1++ = *s2++;
 	return (s1);
@@ -69,6 +71,20 @@ int	string_equals(char *s1, char *s2)
 	s2_size = string_length(s2);
 	if (s1_size == s2_size)
 		if (string_compare(s1, s2, s1_size) == 0)
+			return (1);
+	return (0);
+}
+
+int	are_equals(char *s1, char *s2)
+{
+	size_t	s1_size;
+	size_t	s2_size;
+
+	s1_size = string_length(s1);
+	s2_size = string_length(s2);
+	if (s1_size == s2_size || (s1_size == s2_size - 1
+			&& s2[s2_size - 1] == '\n'))
+		if (!string_compare(s1, s2, s1_size))
 			return (1);
 	return (0);
 }

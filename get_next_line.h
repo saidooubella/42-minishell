@@ -1,30 +1,36 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   parser.h                                           :+:      :+:    :+:   */
+/*   get_next_line.h                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/11/08 10:58:25 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/10 13:41:34 by soubella         ###   ########.fr       */
+/*   Created: 2022/10/07 14:51:26 by soubella          #+#    #+#             */
+/*   Updated: 2022/11/10 14:50:12 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef PARSER_H
-# define PARSER_H
+#ifndef FT_GET_NEXT_LINE_H
+# define FT_GET_NEXT_LINE_H
 
-# include "interpreter.h"
-# include "tokens.h"
-# include "string.h"
-# include "nodes.h"
+# include <sys/types.h>
 
-typedef struct s_parser
+# define DEFAULT_CAPACITY 16
+# define BUFFER_SIZE 8192
+
+typedef struct s_state_holder
 {
-	t_environment	*env;
-	t_tokens		*tokens;
-	size_t			index;
-}	t_parser;
+	char	buffer[BUFFER_SIZE];
+	ssize_t	read_size;
+	size_t	offset;
+}	t_state_holder;
 
-t_node		*parse(t_parser *parser);
+typedef struct s_read_info
+{
+	int		has_newline;
+	size_t	line_size;
+}	t_read_info;
+
+char				*get_next_line(int fd);
 
 #endif

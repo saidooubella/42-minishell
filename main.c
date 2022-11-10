@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 11:01:21 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/09 14:13:58 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/10 15:50:36 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include "parser.h"
 #include "lexer.h"
 #include "utils.h"
+#include "nodes.h"
 
 void	node_free(t_node *node);
 
@@ -30,17 +31,10 @@ void	command_node_free(t_command_node *node)
 
 	index = -1;
 	while (++index < node->redirections_size)
-	{
-		if (index > 0) printf(" ");
-		printf("%d %s", node->redirections[index].type, node->redirections[index].extra.value);
 		string_free(&node->redirections[index].extra);
-	}
 	index = -1;
 	while (++index < node->args_size)
-	{
-		printf(" %s", node->args[index].value);
 		string_free(&node->args[index]);
-	}
 	free(node->redirections);
 	free(node->args);
 	free(node);
@@ -51,9 +45,7 @@ void	parent_node_free(t_parent_node *node)
 	size_t	index;
 
 	index = -1;
-	printf("(");
 	node_free(node->expression);
-	printf(")");
 	free(node);
 }
 
@@ -62,11 +54,8 @@ void	pipe_node_free(t_pipe_node *node)
 	size_t	index;
 
 	index = -1;
-	printf("(");
 	node_free(node->right);
-	printf(" %s ", node->operator->lexeme);
 	node_free(node->left);
-	printf(")");
 	free(node);
 }
 
@@ -75,11 +64,8 @@ void	conjuction_node_free(t_conjuction_node *node)
 	size_t	index;
 
 	index = -1;
-	printf("(");
 	node_free(node->right);
-	printf(" %s ", node->operator->lexeme);
 	node_free(node->left);
-	printf(")");
 	free(node);
 }
 
@@ -125,15 +111,16 @@ int	main(int ac, char **av, char **env)
 		if (tokens->size > 1)
 		{
 			// TODO
-			for (size_t i = 0; i < tokens->size; i++) {
-				printf("%s|%d\n", tokens->tokens[i].lexeme, tokens->tokens[i].type);
-			}
+			// for (size_t i = 0; i < tokens->size; i++) {
+			// 	printf("%s|%d\n", tokens->tokens[i].lexeme, tokens->tokens[i].type);
+			// }
 			t_parser	parser;
 			parser.index = 0;
 			parser.tokens = tokens;
 			parser.env = environment;
-			node_free(parse(&parser));
-			printf("\n");
+			t_node *root = parse(&parser);
+			environment->last_exit_code = visit_node(environment, root);
+			node_free(root);
 		}
 		tokens_free(&tokens);
 		lexer_free(&lexer);
