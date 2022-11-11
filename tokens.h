@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:22:45 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/09 14:42:09 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/11 09:34:35 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,8 +49,15 @@ typedef struct s_tokens
 	size_t	size;
 }	t_tokens;
 
-void		tokens_add(t_tokens *tokens, char *lexeme, t_token_type type);
-void		tokens_free(t_tokens **tokens);
-t_tokens	*tokens_new(void);
+typedef struct s_optional_token
+{
+	t_token	*token;
+	bool	present;
+}	t_optional_token;
+
+t_optional_token	token_optional(t_token *token, bool present);
+void				tokens_add(t_tokens *tokens, char *lexeme, t_token_type type);
+void				tokens_free(t_tokens **tokens);
+t_tokens			*tokens_new(void);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:22:24 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/06 13:13:33 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/11 10:13:47 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,15 @@ t_tokens	*tokens_new(void)
 	tokens->capacity = 16;
 	tokens->size = 0;
 	return (tokens);
+}
+
+t_optional_token	token_optional(t_token *token, bool present)
+{
+	t_optional_token	optional;
+
+	optional.present = present;
+	optional.token = token;
+	return (optional);
 }
 
 void	tokens_free(t_tokens **tokens)

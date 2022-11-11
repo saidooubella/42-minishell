@@ -1,6 +1,4 @@
-!Makefile
-!*.c
-!*.h
-.vscode
-.idea
 minishell
+a.out
+.vscode
+.DS_Stor

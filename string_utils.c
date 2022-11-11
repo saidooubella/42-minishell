@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:41:23 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/10 15:15:56 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/10 17:08:38 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,54 @@
 
 #include "string_utils.h"
 #include "utils.h"
+
+static int	digits_count(unsigned int number)
+{
+	int	count;
+
+	if (number == 0)
+		return (1);
+	count = 0;
+	while (number != 0)
+	{
+		number /= 10;
+		count++;
+	}
+	return (count);
+}
+
+char	*int_to_string(int n)
+{
+	unsigned int number;
+	char		*result;
+	int			size;
+	int			end;
+	int			i;
+
+	number = n;
+	end = 0;
+	if (n < 0)
+	{
+		number = -n;
+		end = 1;
+	}
+	size = digits_count(number) + 1;
+	if (n < 0)
+		size += 1;
+	result = malloc(sizeof(char) * size);
+	if (result == 0)
+		error("Out of memory");
+	if (n < 0)
+		result[0] = '-';
+	i = size - 2;
+	while (i >= end)
+	{
+		result[i--] = "0123456789"[number % 10];
+		number /= 10;
+	}
+	result[size - 1] = 0;
+	return (result);
+}
 
 static char	*append(char *s1, char const *s2)
 {
@@ -34,7 +82,7 @@ char	*string_join(char const *s1, char const *s2)
 	size = string_length(s1) + string_length(s2);
 	res = malloc(size + 1);
 	if (res == 0)
-		error("Out of memory");
+		memory_error();
 	*append(append(res, s1), s2) = 0;
 	return (res);
 }

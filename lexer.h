@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:19:18 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/06 12:28:47 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/11 11:22:46 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ typedef struct s_lexer
 
 typedef struct s_lexer_case
 {
-	void	(*apply)(t_lexer *lexer, t_tokens *tokens);
+	bool	(*apply)(t_lexer *lexer, t_tokens *tokens);
 	bool	(*check)(t_lexer * lexer);
 }	t_lexer_case;
 

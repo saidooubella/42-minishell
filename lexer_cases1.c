@@ -6,10 +6,11 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:28:08 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/09 14:42:03 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/11 11:27:25 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <unistd.h>
 #include <stdio.h>
 
 #include "lexer_cases.h"
@@ -17,8 +18,9 @@
 #include "lexer_utils.h"
 #include "lexer.h"
 #include "utils.h"
+#include "ft_printf.h"
 
-void	lexer_tokenize_token(t_lexer *lexer, t_tokens *tokens,
+bool	lexer_tokenize_token(t_lexer *lexer, t_tokens *tokens,
 	t_token_type type, size_t length)
 {
 	size_t	start;
@@ -27,9 +29,10 @@ void	lexer_tokenize_token(t_lexer *lexer, t_tokens *tokens,
 	lexer->index += length;
 	tokens_smart_add(lexer, tokens, substring(lexer->content,
 			start, lexer->index), type);
+	return (true);
 }
 
-void	lexer_tokenize_identifier(t_lexer *lexer, t_tokens *tokens)
+bool	lexer_tokenize_identifier(t_lexer *lexer, t_tokens *tokens)
 {
 	size_t	start;
 
@@ -48,21 +51,24 @@ void	lexer_tokenize_identifier(t_lexer *lexer, t_tokens *tokens)
 		tokens_smart_add(lexer, tokens, substring(lexer->content,
 				start, lexer->index), VARIABLE);
 	}
+	return (true);
 }
 
-void	lexer_tokenize_word(t_lexer *lexer, t_tokens *tokens)
+bool	lexer_tokenize_word(t_lexer *lexer, t_tokens *tokens)
 {
 	size_t	start;
 
 	start = lexer->index;
+	lexer->index += 1;
 	while (!lexer_reached_end(lexer) && !string_contains(SPECIAL_CHARS,
 			lexer_current(lexer)))
 		lexer->index += 1;
 	tokens_smart_add(lexer, tokens, substring(lexer->content,
 			start, lexer->index), WORD);
+	return (true);
 }
 
-void	lexer_tokenize_raw_string(t_lexer *lexer, t_tokens *tokens)
+bool	lexer_tokenize_raw_string(t_lexer *lexer, t_tokens *tokens)
 {
 	size_t	start;
 
@@ -73,12 +79,15 @@ void	lexer_tokenize_raw_string(t_lexer *lexer, t_tokens *tokens)
 	tokens_smart_add(lexer, tokens, substring(lexer->content,
 			start, lexer->index), WORD);
 	if (lexer_current(lexer) == '\'')
+	{
 		lexer->index++;
-	else
-		error("Error: unterminated string literal\n");
+		return (true);
+	}
+	ft_printf(STDERR_FILENO, "Error: unterminated string literal\n");
+	return (false);
 }
 
-void	lexer_tokenize_string(t_lexer *lexer, t_tokens *tokens)
+bool	lexer_tokenize_string(t_lexer *lexer, t_tokens *tokens)
 {
 	size_t	start;
 
@@ -101,7 +110,10 @@ void	lexer_tokenize_string(t_lexer *lexer, t_tokens *tokens)
 		tokens_smart_add(lexer, tokens, substring(lexer->content,
 				start, lexer->index), WORD);
 	if (lexer_current(lexer) == '"')
+	{
 		lexer_tokenize_token(lexer, tokens, CLOSE_DOUBLE_QUOTE, 1);
-	else
-		error("Error: unterminated string literal\n");
+		return (true);
+	}
+	ft_printf(STDERR_FILENO, "Error: unterminated string literal\n");
+	return (false);
 }

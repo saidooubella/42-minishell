@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 10:20:00 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/10 16:18:59 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/11 13:49:45 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,34 +25,6 @@
 #include "nodes.h"
 
 // --------------------------------------------------------
-
-int	read_from_stdin(char *limiter)
-{
-	int		read_write[2];
-	char	*line;
-
-	if (pipe(read_write) == -1)
-	{
-		perror("minishell");
-		exit(0);
-	}
-	while (1)
-	{
-		ft_printf(STDERR_FILENO, "> ");
-		line = get_next_line(STDIN_FILENO);
-		if (line == 0)
-			break ;
-		if (are_equals(limiter, line))
-		{
-			free(line);
-			break ;
-		}
-		write(read_write[1], line, string_length(line));
-		free(line);
-	}
-	close(read_write[1]);
-	return (read_write[0]);
-}
 
 char	**unwrap_args(t_string *args, size_t size)
 {
@@ -88,7 +60,23 @@ char	**unwrap_env(t_symbol *syms, size_t size)
 	return (mapped);
 }
 
-int	visit_command_node(t_environment *env, t_command_node *node)
+int	await_process(int pid)
+{
+	int status;
+
+	status = 0;
+	waitpid(pid, &status, 0);
+	if (WIFEXITED(status))
+		return (WEXITSTATUS(status));
+	return (WTERMSIG(status) + 128);
+}
+
+int	visit_command_node(
+	t_environment *env,
+	t_command_node *node,
+	int in, int out, int to_be_closed,
+	bool should_wait
+)
 {
 	if (string_equals(node->args->value, "echo"))
 		return (echo_builtin(env, node->args_size, node->args));
@@ -110,9 +98,9 @@ int	visit_command_node(t_environment *env, t_command_node *node)
 	if (pid == 0) {
 
 		size_t	index;
-		int out = -1;
-		int in = -1;
 
+		if (to_be_closed != -1)
+			close(to_be_closed);
 		index = -1;
 		while (++index < node->redirections_size)
 		{
@@ -121,20 +109,24 @@ int	visit_command_node(t_environment *env, t_command_node *node)
 				if (in != -1) close(in);
 				in = open(redirect.extra.value, O_RDONLY);
 				if (in == -1)
-					error("minishell: %s: %s\n", strerror(errno), redirect.extra.value);
+					error("minishell: %s: %s", strerror(errno), redirect.extra.value);
 			} else if (redirect.type == OUTPUT) {
 				if (out != -1) close(out);
 				out = open(redirect.extra.value, O_WRONLY | O_TRUNC | O_CREAT, 0644);
 				if (in == -1)
-					error("minishell: %s: %s\n", strerror(errno), redirect.extra.value);
+					error("minishell: %s: %s", strerror(errno), redirect.extra.value);
 			} else if (redirect.type == HEREDOC) {
 				if (in != -1) close(in);
-				in = read_from_stdin(redirect.extra.value);
+				int read_write[2];
+				pipe(read_write);
+				write(read_write[1], redirect.extra.value, string_length(redirect.extra.value));
+				close(read_write[1]);
+				in = read_write[0];
 			} else if (redirect.type == APPEND) {
 				if (out != -1) close(out);
-				out = open(redirect.extra.value, O_WRONLY | O_TRUNC | O_CREAT | O_APPEND, 0644);
+				out = open(redirect.extra.value, O_WRONLY | O_CREAT | O_APPEND, 0644);
 				if (in == -1)
-					error("minishell: %s: %s\n", strerror(errno), redirect.extra.value);
+					error("minishell: %s: %s", strerror(errno), redirect.extra.value);
 			}
 		}
 
@@ -157,49 +149,66 @@ int	visit_command_node(t_environment *env, t_command_node *node)
 			while (++index < env->symbols_size)
 				free(envp[index]);
 			free(envp);
-			error("minishell: %s\n", strerror(errno));
+			error("minishell: %s", strerror(errno));
 		}
 		
 		exit(0);
 	}
-	int res;
-	waitpid(pid, &res, 0);
-	return (res);
+	if (should_wait)
+		return (await_process(pid));
+	return (pid);
 }
 
-int	visit_parent_node(t_environment *env, t_parent_node *node)
+int	visit_parent_node(t_environment *env, t_parent_node *node, int in, int out, int to_be_closed, bool should_wait)
 {
-	return (visit_node(env, node->expression));
+	return (visit_node(env, node->expression, in, out, to_be_closed, should_wait));
 }
 
-int	visit_pipe_node(t_environment *env, t_pipe_node *node)
+int	visit_pipe_node(t_environment *env, t_pipe_node *node, int in, int out, int to_be_closed, bool should_wait)
+{
+	(void) to_be_closed;
+	(void) should_wait;
+	(void) env;
+	(void) env;
+	int read_write[2];
+	pipe(read_write);
+	visit_node(env, node->left, in, read_write[1], read_write[0], false);
+	int pid = visit_node(env, node->right, read_write[0], out, read_write[1], false);
+	close(read_write[0]);
+	close(read_write[1]);
+	return (await_process(pid));
+}
+
+int	visit_conjuction_node(t_environment *env, t_conjuction_node *node, int in, int out, int to_be_closed, bool should_wait)
 {
 	(void) node;
 	(void) env;
-	visit_node(env, node->left);
-	visit_node(env, node->right);
-	return (0);
+	if (string_equals(node->operator->lexeme, "&&")) {
+		int res = visit_node(env, node->left, in, out, to_be_closed, should_wait);
+		if (res != 0)
+			return res;
+		return visit_node(env, node->right, in, out, to_be_closed, should_wait);
+	} else if (string_equals(node->operator->lexeme, "||")) {
+		int res = visit_node(env, node->left, in, out, to_be_closed, should_wait);
+		if (res == 0)
+			return res;
+		return visit_node(env, node->right, in, out, to_be_closed, should_wait);
+	} else {
+		error("Error: Illegal state in 'visit_conjuction_node'");
+		return (0);
+	}
 }
 
-int	visit_conjuction_node(t_environment *env, t_conjuction_node *node)
-{
-	(void) node;
-	(void) env;
-	visit_node(env, node->left);
-	visit_node(env, node->right);
-	return (0);
-}
-
-int	visit_node(t_environment *env, t_node *node)
+int	visit_node(t_environment *env, t_node *node, int in, int out, int to_be_closed, bool should_wait)
 {
 	if (node->type == COMMAND_NODE)
-		return (visit_command_node(env, (t_command_node *) node));
+		return (visit_command_node(env, (t_command_node *) node, in, out, to_be_closed, should_wait));
 	else if (node->type == PARENTHESES_NODE)
-		return (visit_parent_node(env, (t_parent_node *) node));
+		return (visit_parent_node(env, (t_parent_node *) node, in, out, to_be_closed, should_wait));
 	else if (node->type == PIPELINE_NODE)
-		return (visit_pipe_node(env, (t_pipe_node *) node));
+		return (visit_pipe_node(env, (t_pipe_node *) node, in, out, to_be_closed, should_wait));
 	else if (node->type == CONJUCTION_NODE)
-		return (visit_conjuction_node(env, (t_conjuction_node *) node));
+		return (visit_conjuction_node(env, (t_conjuction_node *) node, in, out, to_be_closed, should_wait));
 	else
 	{
 		error("Error: Illegal state in 'visit_node'");
@@ -322,8 +331,3 @@ void	env_put_var(t_environment *env, t_symbol symbol)
 	}
 	env_insert_var(env, symbol);
 }
-/*
-
-for (char *line; )
-
-*/

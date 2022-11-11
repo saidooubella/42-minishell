@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 10:58:25 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/10 13:41:34 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/11 10:31:40 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,6 @@ typedef struct s_parser
 	size_t			index;
 }	t_parser;
 
-t_node		*parse(t_parser *parser);
+t_optional_node	parse(t_parser *parser);
 
 #endif

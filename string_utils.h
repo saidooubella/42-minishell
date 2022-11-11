@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:42:13 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/10 14:29:38 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/10 16:57:38 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,5 +25,6 @@ int		string_compare(const char *s1, const char *s2, size_t n);
 int		string_equals(char *s1, char *s2);
 char	*string_join(char const *s1, char const *s2);
 int		are_equals(char *s1, char *s2);
+char	*int_to_string(int number);
 
 #endif

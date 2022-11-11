@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 13:39:15 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/10 13:43:18 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/11 10:19:55 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,15 @@
 #include "tokens.h"
 #include "string.h"
 #include "nodes.h"
+
+t_optional_node	node_optional(t_node *node, bool present)
+{
+	t_optional_node	optional;
+
+	optional.present = present;
+	optional.node = node;
+	return (optional);
+}
 
 t_node	*parent_node_new(
 	t_token *left_parent, t_node *expression, t_token *right_parent)

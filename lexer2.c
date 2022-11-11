@@ -6,13 +6,15 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:47:53 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/06 18:39:28 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/11 10:43:40 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "string_utils.h"
 #include "lexer_utils.h"

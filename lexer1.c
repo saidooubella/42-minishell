@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:08:51 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/06 18:33:09 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/11 11:22:55 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 void	set_case(
 	t_lexer_case *caze,
 	bool check(t_lexer *lexer),
-	void apply(t_lexer *lexer, t_tokens *tokens))
+	bool apply(t_lexer *lexer, t_tokens *tokens))
 {
 	caze->apply = apply;
 	caze->check = check;

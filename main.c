@@ -6,11 +6,12 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 11:01:21 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/10 15:50:36 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/11 13:51:50 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdio.h>
+#include <unistd.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <readline/readline.h>
@@ -22,6 +23,7 @@
 #include "lexer.h"
 #include "utils.h"
 #include "nodes.h"
+#include "ft_printf.h"
 
 void	node_free(t_node *node);
 
@@ -71,6 +73,8 @@ void	conjuction_node_free(t_conjuction_node *node)
 
 void	node_free(t_node *node)
 {
+	if (node == NULL)
+		return ;
 	if (node->type == COMMAND_NODE)
 		command_node_free((t_command_node *) node);
 	else if (node->type == PARENTHESES_NODE)
@@ -80,7 +84,7 @@ void	node_free(t_node *node)
 	else if (node->type == CONJUCTION_NODE)
 		conjuction_node_free((t_conjuction_node *) node);
 	else
-		error("Error: Illegal state in 'node_free'");
+		ft_printf(STDERR_FILENO, "Error: Illegal state in 'node_free'\n");
 }
 
 void	check_leaks(void)
@@ -93,8 +97,6 @@ int	main(int ac, char **av, char **env)
 	t_tokens	*tokens;
 	t_lexer		*lexer;
 	char		*line;
-
-	atexit(check_leaks); // TODO - Remove this
 
 	t_environment *environment = environment_new(env);
 
@@ -118,21 +120,24 @@ int	main(int ac, char **av, char **env)
 			parser.index = 0;
 			parser.tokens = tokens;
 			parser.env = environment;
-			t_node *root = parse(&parser);
-			environment->last_exit_code = visit_node(environment, root);
-			node_free(root);
+			t_optional_node root = parse(&parser);
+			if (root.present)
+				environment->last_exit_code = visit_node(environment, root.node, -1, -1, -1, true);
+			node_free(root.node);
 		}
 		tokens_free(&tokens);
 		lexer_free(&lexer);
 	}
+	ft_printf(STDOUT_FILENO, "exit\n");
 	environment_free(&environment);
+	check_leaks();
 }
 
 /*
 
 	// NOTE - ARGS ARE CASE INSENSETIVE
 
-	// TODO   - U HAVE TWO MEMCPY AND SOME PRINTF CALLS IN UR CODE U GOTTA REMOVE 'EM
+	// TODO   - U HAVE SOME MEMCPY AND PRINTF CALLS IN UR CODE U GOTTA REMOVE 'EM
 
 	&& - execute right when left successed.
 	|| - execute right when left fail.

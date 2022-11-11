@@ -6,25 +6,33 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:35:47 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/09 12:52:56 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/11 11:26:11 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <unistd.h>
 #include <stdbool.h>
 
 #include "lexer_utils.h"
 #include "lexer_cases.h"
 #include "utils.h"
 #include "lexer.h"
+#include "ft_printf.h"
 
-void	lexer_tokenize_parenthesize(t_lexer *lexer, t_tokens *tokens)
+bool	lexer_tokenize_parenthesize(t_lexer *lexer, t_tokens *tokens)
 {
 	if (lexer_current(lexer) == '(')
+	{
 		lexer_tokenize_token(lexer, tokens, OPEN_PARENT, 1);
-	else if (lexer_current(lexer) == ')')
+		return (true);
+	}
+	if (lexer_current(lexer) == ')')
+	{
 		lexer_tokenize_token(lexer, tokens, CLOSE_PARENT, 1);
-	else
-		error("Error: Illegal state in 'lexer_tokenize_parenthesize'");
+		return (true);
+	}
+	error("Error: Illegal state in 'lexer_tokenize_parenthesize'");
+	return (false);
 }
 
 bool	is_parenthesize(t_lexer *lexer)
