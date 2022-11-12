@@ -5,14 +5,15 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include "readline/readline.h"
 #include "string_builder.h"
-#include "get_next_line.h"
 #include "interpreter.h"
 #include "ft_printf.h"
 #include "tokens.h"
 #include "parser.h"
 #include "utils.h"
 #include "nodes.h"
+#include "main.h"
 
 bool	parser_current_is(t_parser *parser, t_token_type type)
 {
@@ -28,7 +29,7 @@ t_token	*parser_consume(t_parser *parser)
 {
 	return (&parser->tokens->tokens[parser->index++]);
 }
-// TODO - HANDLE NULL AND THERE IS AN INFINIT LOOP SOMEWHERE WHEN THE INPUT IS ^>^%>%^>&^%>^&$>&%^\n&$^
+
 t_optional_token	parser_expect(t_parser *parser, t_token_type type, char *expected)
 {
 	if (parser_current_is(parser, type))
@@ -43,7 +44,6 @@ t_string	unit_expression(t_parser *parser, bool expand)
 	t_token				*dollar;
 	char				*result;
 
-	(void) expand;
 	if (parser_current_is(parser, WORD))
 		return (string_create(parser_consume(parser)->lexeme, false));
 	if (parser_current_is(parser, OPEN_DOUBLE_QUOTE))
@@ -91,8 +91,7 @@ t_string	unit_expression(t_parser *parser, bool expand)
 			char *name = parser_consume(parser)->lexeme;
 			if (string_equals(name, "?"))
 				return (string_create(int_to_string(parser->env->last_exit_code), true));
-			else
-				return (string_create(env_get_var(parser->env, name, ""), false));
+			return (string_create(env_get_var(parser->env, name, ""), false));
 		}
 		return (string_create(string_join(dollar->lexeme, parser_consume(parser)->lexeme), true));
 	}
@@ -144,30 +143,45 @@ t_optional_string	redirection_operand(t_parser *parser, bool expand)
 	return (string_optional(concatenation_expression(parser, expand), true));
 }
 
-t_string	read_from_stdin(char *limiter)
+t_optional_string	read_from_stdin(char *limiter)
 {
 	t_string_builder	*builder;
 	char				*result;
 	char				*line;
+	bool				success;
 
 	builder = string_builder_new();
+	success = true;
+	result = NULL;
+	line = NULL;
+	register_handler(&g_int_action, SIGINT, sigint_close_handler);
 	while (1)
 	{
-		ft_printf(STDOUT_FILENO, "> ");
-		line = get_next_line(STDIN_FILENO);
-		if (line == 0)
-			break ;
-		if (are_equals(limiter, line))
+		g_in_fd = -1;
+		line = readline("> ");
+		if (g_in_fd != -1 || line == NULL)
 		{
-			free(line);
+			if (g_in_fd != -1)
+			{
+				dup2(g_in_fd, STDIN_FILENO);
+				close(g_in_fd);
+				g_in_fd = -1;
+			}
+			success = false;
 			break ;
 		}
+		if (string_equals(limiter, line))
+			break ;
 		string_builder_append_cstring(builder, line);
 		free(line);
+		line = NULL;
 	}
-	result = string_builder_to_cstr(builder);
+	register_handler(&g_int_action, SIGINT, sigint_handler);
+	free(line);
+	if (success)
+		result = string_builder_to_cstr(builder);
 	string_builder_free(&builder);
-	return (string_create(result, true));
+	return (string_optional(string_create(result, success), success));
 }
 
 t_optional_node	primary_expression(t_parser *parser)
@@ -184,7 +198,7 @@ t_optional_node	primary_expression(t_parser *parser)
 			return (expression);
 		right_parent = parser_expect(parser, CLOSE_PARENT, ")");
 		if (!right_parent.present)
-			return (node_optional(expression.node, false)); // NOTE - returns null
+			return (node_optional(expression.node, false));
 		return (node_optional(parent_node_new(left_parent, expression.node, right_parent.token), true));
 	}
 	t_node	*command = command_node_new();
@@ -202,8 +216,10 @@ t_optional_node	primary_expression(t_parser *parser)
 			parser_consume(parser);
 			t_optional_string	extra = redirection_operand(parser, false);
 			if (!extra.present) return (node_optional(command, false));
-			command_add_redirection(command, HEREDOC, read_from_stdin(extra.string.value));
+			t_optional_string	content = read_from_stdin(extra.string.value);
 			string_free(&extra.string);
+			if (!content.present) return (node_optional(command, false));
+			command_add_redirection(command, HEREDOC, content.string);
 		}
 		else if (parser_current_is(parser, GREATER_THAN))
 		{

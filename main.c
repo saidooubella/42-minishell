@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 11:01:21 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/11 13:51:50 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/12 17:16:51 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,14 +16,16 @@
 #include <stdlib.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <signal.h>
 
 #include "string_utils.h"
 #include "interpreter.h"
+#include "ft_printf.h"
 #include "parser.h"
 #include "lexer.h"
 #include "utils.h"
 #include "nodes.h"
-#include "ft_printf.h"
+#include "main.h"
 
 void	node_free(t_node *node);
 
@@ -92,24 +94,59 @@ void	check_leaks(void)
 	system("leaks minishell");
 }
 
+void	sigint_handler(int signum)
+{
+	if (signum != SIGINT)
+		return ;
+	write(1, "\n", 1);
+	rl_on_new_line();
+	rl_replace_line("", 0);
+	rl_redisplay();
+}
+
+void	sigint_close_handler(int signum)
+{
+	if (signum != SIGINT)
+		return ;
+	g_in_fd = dup(STDOUT_FILENO);
+	close(STDIN_FILENO);
+}
+
+void	register_handler(struct sigaction *action, int signum, void f(int))
+{
+	action->sa_handler = f;
+	action->sa_flags = 0;
+	action->sa_mask = 0;
+	sigaction(signum, action, NULL);
+}
+
 int	main(int ac, char **av, char **env)
 {
 	t_tokens	*tokens;
 	t_lexer		*lexer;
 	char		*line;
 
-	t_environment *environment = environment_new(env);
-
 	(void) ac;
 	(void) av;
+	t_environment *environment = environment_new(env);
+
+	register_handler(&g_quit_action, SIGQUIT, SIG_IGN);
+
+	rl_catch_signals = 0;
+
 	while (environment->running)
 	{
-		line = readline("$> ");
+		register_handler(&g_int_action, SIGINT, sigint_handler);
+		if (isatty(STDIN_FILENO))
+			line = readline("$> ");
+		else
+			line = readline(NULL);
 		if (line == NULL)
 			break ;
+		register_handler(&g_int_action, SIGINT, SIG_IGN);
+		add_history(line);
 		lexer = lexer_new(line);
 		tokens = lexer_tokenize(lexer);
-		add_history(line);
 		if (tokens->size > 1)
 		{
 			// TODO
@@ -128,10 +165,18 @@ int	main(int ac, char **av, char **env)
 		tokens_free(&tokens);
 		lexer_free(&lexer);
 	}
-	ft_printf(STDOUT_FILENO, "exit\n");
+	if (isatty(STDIN_FILENO))
+		ft_printf(STDOUT_FILENO, "exit\n");
 	environment_free(&environment);
-	check_leaks();
+	// check_leaks();
 }
+
+/*
+
+	SIGINT  - Ctrl+C
+	SIGQUIT - Ctrl+\
+
+*/
 
 /*
 

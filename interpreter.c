@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 10:20:00 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/11 13:49:45 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/12 16:24:33 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#include "get_next_line.h"
 #include "interpreter.h"
 #include "ft_printf.h"
 #include "builtins.h"
@@ -71,6 +70,40 @@ int	await_process(int pid)
 	return (WTERMSIG(status) + 128);
 }
 
+int32_t string_hash_code(char *string)
+{
+	int32_t	h;
+
+	h = 0;
+	while (*string)
+		h = 31 * h + *string++;
+	return h;
+}
+
+#define ECHO_HASH_CODE ((int32_t) 3107365)
+#define CD_HASH_CODE ((int32_t) 3169)
+#define PWD_HASH_CODE ((int32_t) 111421)
+#define EXPORT_HASH_CODE -((int32_t) 1289153612)
+#define UNSET_HASH_CODE ((int32_t) 111442729)
+#define EXIT_HASH_CODE ((int32_t) 3127582)
+#define ENV_HASH_CODE ((int32_t) 100589)
+
+int32_t	builtin_hash(t_string *name)
+{
+	int32_t	hash_code;
+
+	hash_code = string_hash_code(name->value);
+	if (ECHO_HASH_CODE == hash_code
+		|| CD_HASH_CODE == hash_code
+		|| PWD_HASH_CODE == hash_code
+		|| EXPORT_HASH_CODE == hash_code
+		|| UNSET_HASH_CODE == hash_code
+		|| EXIT_HASH_CODE == hash_code
+		|| ENV_HASH_CODE == hash_code)
+		return (hash_code);
+	return (0);
+}
+
 int	visit_command_node(
 	t_environment *env,
 	t_command_node *node,
@@ -78,20 +111,25 @@ int	visit_command_node(
 	bool should_wait
 )
 {
-	if (string_equals(node->args->value, "echo"))
-		return (echo_builtin(env, node->args_size, node->args));
-	if (string_equals(node->args->value, "cd"))
-		return (cd_builtin(env, node->args_size, node->args));
-	if (string_equals(node->args->value, "pwd"))
-		return (pwd_builtin(env, node->args_size, node->args));
-	if (string_equals(node->args->value, "export"))
-		return (export_builtin(env, node->args_size, node->args));
-	if (string_equals(node->args->value, "unset"))
-		return (unset_builtin(env, node->args_size, node->args));
-	if (string_equals(node->args->value, "exit"))
-		return (exit_builtin(env, node->args_size, node->args));
-	if (string_equals(node->args->value, "env"))
-		return (env_builtin(env, node->args_size, node->args));
+	int32_t	hash_code = builtin_hash(node->args);
+
+	if (hash_code != 0)
+	{
+		if (ECHO_HASH_CODE == hash_code)
+			return (echo_builtin(env, node->args_size, node->args));
+		else if (CD_HASH_CODE == hash_code)
+			return (cd_builtin(env, node->args_size, node->args));
+		else if (PWD_HASH_CODE == hash_code)
+			return (pwd_builtin(env, node->args_size, node->args));
+		else if (EXPORT_HASH_CODE == hash_code)
+			return (export_builtin(env, node->args_size, node->args));
+		else if (UNSET_HASH_CODE == hash_code)
+			return (unset_builtin(env, node->args_size, node->args));
+		else if (EXIT_HASH_CODE == hash_code)
+			return (exit_builtin(env, node->args_size, node->args));
+		else if (ENV_HASH_CODE == hash_code)
+			return (env_builtin(env, node->args_size, node->args));
+	}
 
 	int	pid = fork();
 
@@ -144,12 +182,7 @@ int	visit_command_node(
 			char **args = unwrap_args(node->args, node->args_size);
 			char **envp = unwrap_env(env->symbols, env->symbols_size);
 			execve(args[0], args, envp);
-			free(args);
-			index = -1;
-			while (++index < env->symbols_size)
-				free(envp[index]);
-			free(envp);
-			error("minishell: %s", strerror(errno));
+			error("minishell: %s: %s", strerror(errno), args[0]);
 		}
 		
 		exit(0);
@@ -172,11 +205,12 @@ int	visit_pipe_node(t_environment *env, t_pipe_node *node, int in, int out, int 
 	(void) env;
 	int read_write[2];
 	pipe(read_write);
-	visit_node(env, node->left, in, read_write[1], read_write[0], false);
-	int pid = visit_node(env, node->right, read_write[0], out, read_write[1], false);
+	int pid1 = visit_node(env, node->left, in, read_write[1], read_write[0], false);
+	int pid2 = visit_node(env, node->right, read_write[0], out, read_write[1], false);
 	close(read_write[0]);
 	close(read_write[1]);
-	return (await_process(pid));
+	await_process(pid1);
+	return (await_process(pid2));
 }
 
 int	visit_conjuction_node(t_environment *env, t_conjuction_node *node, int in, int out, int to_be_closed, bool should_wait)

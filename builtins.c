@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include "string_utils.h"
 #include "lexer_utils.h"
@@ -57,8 +58,16 @@ int	cd_builtin(t_environment *env, size_t argc, t_string *argv)
 			return (1);
 		}
 	}
+	char *x = string_join(env->working_dir.value, "/");
+	char *y = string_join(x, target);
+	free(x);
 	string_free(&env->working_dir);
-	env->working_dir = string_create(target, false);
+	chdir(y);
+	free(y);
+	y = getcwd(NULL, 0);
+	if (y == NULL)
+		error("Error: can't retreive the working directory");
+	env->working_dir = string_create(y, true);
 	return (0);
 }
 
