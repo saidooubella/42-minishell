@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:47:53 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/11 10:43:40 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/12 20:08:28 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,27 +36,29 @@ static bool	skip_whitespace_check_end(t_lexer *lexer)
 	return (!lexer_reached_end(lexer));
 }
 
-t_tokens	*lexer_tokenize(t_lexer *lexer)
+t_lexer_result	lexer_tokenize(t_lexer *lexer)
 {
-	size_t		index;
-	t_tokens	*tokens;
+	size_t			index;
+	t_lexer_result	result;
 
-	tokens = tokens_new();
-	while (skip_whitespace_check_end(lexer))
+	result.tokens = tokens_new();
+	result.success = true;
+	while (result.success && skip_whitespace_check_end(lexer))
 	{
 		index = -1;
 		while (++index < CASES_SIZE)
 		{
 			if (lexer->cases[index].check(lexer))
 			{
-				lexer->cases[index].apply(lexer, tokens);
+				if (!lexer->cases[index].apply(lexer, result.tokens))
+					result.success = false;
 				break ;
 			}
 		}
 	}
-	tokens_smart_add(lexer, tokens,
+	tokens_smart_add(lexer, result.tokens,
 		string_duplicate("end of file"), END_OF_FILE);
-	return (tokens);
+	return (result);
 }
 
 void	lexer_free(t_lexer **lexer)

@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 11:01:21 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/12 17:16:51 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/12 20:07:53 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,9 +122,9 @@ void	register_handler(struct sigaction *action, int signum, void f(int))
 
 int	main(int ac, char **av, char **env)
 {
-	t_tokens	*tokens;
-	t_lexer		*lexer;
-	char		*line;
+	t_lexer_result	result;
+	t_lexer			*lexer;
+	char			*line;
 
 	(void) ac;
 	(void) av;
@@ -146,8 +146,8 @@ int	main(int ac, char **av, char **env)
 		register_handler(&g_int_action, SIGINT, SIG_IGN);
 		add_history(line);
 		lexer = lexer_new(line);
-		tokens = lexer_tokenize(lexer);
-		if (tokens->size > 1)
+		result = lexer_tokenize(lexer);
+		if (result.success && result.tokens->size > 1)
 		{
 			// TODO
 			// for (size_t i = 0; i < tokens->size; i++) {
@@ -155,20 +155,20 @@ int	main(int ac, char **av, char **env)
 			// }
 			t_parser	parser;
 			parser.index = 0;
-			parser.tokens = tokens;
+			parser.tokens = result.tokens;
 			parser.env = environment;
 			t_optional_node root = parse(&parser);
 			if (root.present)
 				environment->last_exit_code = visit_node(environment, root.node, -1, -1, -1, true);
 			node_free(root.node);
 		}
-		tokens_free(&tokens);
+		tokens_free(&result.tokens);
 		lexer_free(&lexer);
 	}
 	if (isatty(STDIN_FILENO))
 		ft_printf(STDOUT_FILENO, "exit\n");
 	environment_free(&environment);
-	// check_leaks();
+	check_leaks();
 }
 
 /*

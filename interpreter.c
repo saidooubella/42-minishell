@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 10:20:00 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/12 16:24:33 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/12 19:01:37 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,38 +70,42 @@ int	await_process(int pid)
 	return (WTERMSIG(status) + 128);
 }
 
-int32_t string_hash_code(char *string)
+void	resolve_redirections(t_command_node *node, int *in, int *out)
 {
-	int32_t	h;
+	size_t	index;
 
-	h = 0;
-	while (*string)
-		h = 31 * h + *string++;
-	return h;
-}
-
-#define ECHO_HASH_CODE ((int32_t) 3107365)
-#define CD_HASH_CODE ((int32_t) 3169)
-#define PWD_HASH_CODE ((int32_t) 111421)
-#define EXPORT_HASH_CODE -((int32_t) 1289153612)
-#define UNSET_HASH_CODE ((int32_t) 111442729)
-#define EXIT_HASH_CODE ((int32_t) 3127582)
-#define ENV_HASH_CODE ((int32_t) 100589)
-
-int32_t	builtin_hash(t_string *name)
-{
-	int32_t	hash_code;
-
-	hash_code = string_hash_code(name->value);
-	if (ECHO_HASH_CODE == hash_code
-		|| CD_HASH_CODE == hash_code
-		|| PWD_HASH_CODE == hash_code
-		|| EXPORT_HASH_CODE == hash_code
-		|| UNSET_HASH_CODE == hash_code
-		|| EXIT_HASH_CODE == hash_code
-		|| ENV_HASH_CODE == hash_code)
-		return (hash_code);
-	return (0);
+	index = -1;
+	while (++index < node->redirections_size)
+	{
+		t_redirection redirect = node->redirections[index];
+		if (redirect.type == INPUT) {
+			if (*in != -1)
+				close(*in);
+			*in = open(redirect.extra.value, O_RDONLY);
+			if (*in == -1)
+				error("minishell: %s: %s", strerror(errno), redirect.extra.value);
+		} else if (redirect.type == OUTPUT) {
+			if (*out != -1)
+				close(*out);
+			*out = open(redirect.extra.value, O_WRONLY | O_TRUNC | O_CREAT, 0644);
+			if (*in == -1)
+				error("minishell: %s: %s", strerror(errno), redirect.extra.value);
+		} else if (redirect.type == HEREDOC) {
+			if (*in != -1)
+				close(*in);
+			int read_write[2];
+			pipe(read_write);
+			write(read_write[1], redirect.extra.value, string_length(redirect.extra.value));
+			close(read_write[1]);
+			*in = read_write[0];
+		} else if (redirect.type == APPEND) {
+			if (*out != -1)
+				close(*out);
+			*out = open(redirect.extra.value, O_WRONLY | O_CREAT | O_APPEND, 0644);
+			if (*in == -1)
+				error("minishell: %s: %s", strerror(errno), redirect.extra.value);
+		}
+	}
 }
 
 int	visit_command_node(
@@ -111,23 +115,21 @@ int	visit_command_node(
 	bool should_wait
 )
 {
-	int32_t	hash_code = builtin_hash(node->args);
-
-	if (hash_code != 0)
+	if (node->args_size > 0)
 	{
-		if (ECHO_HASH_CODE == hash_code)
+		if (string_equals(node->args->value, "echo"))
 			return (echo_builtin(env, node->args_size, node->args));
-		else if (CD_HASH_CODE == hash_code)
+		if (string_equals(node->args->value, "cd"))
 			return (cd_builtin(env, node->args_size, node->args));
-		else if (PWD_HASH_CODE == hash_code)
+		if (string_equals(node->args->value, "pwd"))
 			return (pwd_builtin(env, node->args_size, node->args));
-		else if (EXPORT_HASH_CODE == hash_code)
+		if (string_equals(node->args->value, "export"))
 			return (export_builtin(env, node->args_size, node->args));
-		else if (UNSET_HASH_CODE == hash_code)
+		if (string_equals(node->args->value, "unset"))
 			return (unset_builtin(env, node->args_size, node->args));
-		else if (EXIT_HASH_CODE == hash_code)
+		if (string_equals(node->args->value, "exit"))
 			return (exit_builtin(env, node->args_size, node->args));
-		else if (ENV_HASH_CODE == hash_code)
+		if (string_equals(node->args->value, "env"))
 			return (env_builtin(env, node->args_size, node->args));
 	}
 
@@ -144,24 +146,28 @@ int	visit_command_node(
 		{
 			t_redirection redirect = node->redirections[index];
 			if (redirect.type == INPUT) {
-				if (in != -1) close(in);
+				if (in != -1)
+					close(in);
 				in = open(redirect.extra.value, O_RDONLY);
 				if (in == -1)
 					error("minishell: %s: %s", strerror(errno), redirect.extra.value);
 			} else if (redirect.type == OUTPUT) {
-				if (out != -1) close(out);
+				if (out != -1)
+					close(out);
 				out = open(redirect.extra.value, O_WRONLY | O_TRUNC | O_CREAT, 0644);
 				if (in == -1)
 					error("minishell: %s: %s", strerror(errno), redirect.extra.value);
 			} else if (redirect.type == HEREDOC) {
-				if (in != -1) close(in);
+				if (in != -1)
+					close(in);
 				int read_write[2];
 				pipe(read_write);
 				write(read_write[1], redirect.extra.value, string_length(redirect.extra.value));
 				close(read_write[1]);
 				in = read_write[0];
 			} else if (redirect.type == APPEND) {
-				if (out != -1) close(out);
+				if (out != -1)
+					close(out);
 				out = open(redirect.extra.value, O_WRONLY | O_CREAT | O_APPEND, 0644);
 				if (in == -1)
 					error("minishell: %s: %s", strerror(errno), redirect.extra.value);

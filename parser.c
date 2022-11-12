@@ -143,6 +143,7 @@ t_optional_string	redirection_operand(t_parser *parser, bool expand)
 	return (string_optional(concatenation_expression(parser, expand), true));
 }
 
+// TODO - Resolve variables within the heredoc lines
 t_optional_string	read_from_stdin(char *limiter)
 {
 	t_string_builder	*builder;
@@ -173,6 +174,7 @@ t_optional_string	read_from_stdin(char *limiter)
 		if (string_equals(limiter, line))
 			break ;
 		string_builder_append_cstring(builder, line);
+		string_builder_append_char(builder, '\n');
 		free(line);
 		line = NULL;
 	}
