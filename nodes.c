@@ -6,17 +6,17 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 13:39:15 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/11 10:19:55 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/15 10:33:47 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
-#include <string.h>
 
-#include "utils.h"
+#include "string_utils.h"
 #include "tokens.h"
 #include "string.h"
 #include "nodes.h"
+#include "utils.h"
 
 t_optional_node	node_optional(t_node *node, bool present)
 {
@@ -104,7 +104,7 @@ void	command_add_arg(t_node	*_node, t_string arg)
 		new_args = malloc(sizeof(t_string) * new_capacity);
 		if (new_args == NULL)
 			memory_error();
-		memcpy(new_args, node->args, node->args_size * sizeof(t_string));
+		bytes_copy(new_args, node->args, node->args_size * sizeof(t_string));
 		free(node->args);
 		node->args_cap = new_capacity;
 		node->args = new_args;
@@ -127,7 +127,7 @@ void	command_add_redirection(
 		new_redirects = malloc(sizeof(t_redirection) * new_capacity);
 		if (new_redirects == NULL)
 			memory_error();
-		memcpy(new_redirects, node->redirections, node->redirections_size * sizeof(t_redirection));
+		bytes_copy(new_redirects, node->redirections, node->redirections_size * sizeof(t_redirection));
 		free(node->redirections);
 		node->redirections_cap = new_capacity;
 		node->redirections = new_redirects;

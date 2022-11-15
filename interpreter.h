@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 10:40:35 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/14 17:17:03 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/15 09:51:40 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,15 @@
 # include "utils.h"
 # include "nodes.h"
 
+# define BUILTINS_COUNT 7
+
 typedef struct s_symbol
 {
 	t_string	name;
 	t_string	value;
 }	t_symbol;
+
+typedef struct s_builtin	t_builtin;
 
 typedef struct s_environment
 {
@@ -34,7 +38,14 @@ typedef struct s_environment
 	size_t		symbols_cap;
 	int			last_exit_code;
 	bool		running;
+	t_builtin	*builtins;
 }	t_environment;
+
+typedef struct s_builtin
+{
+	char	*name;
+	int		(*block)(t_environment *env, size_t argc, t_string *argv);
+}	t_builtin;
 
 typedef struct s_result
 {
@@ -49,5 +60,6 @@ void			env_put_var(t_environment *env, t_symbol symbol);
 void			env_remove_var(t_environment *env, char *name);
 void			environment_free(t_environment **env);
 t_environment	*environment_new(char **env);
+t_builtin		*initilize_builtins(void);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:41:23 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/14 12:04:52 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/15 10:33:13 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -335,4 +335,40 @@ int	string_to_int(char *str)
 		str++;
 	}
 	return (res * sign);
+}
+
+void	*bytes_copy(void *dst, const void *src, size_t n)
+{
+	size_t	index;
+	char	*from;
+	char	*to;
+
+	from = (char *) src;
+	to = (char *) dst;
+	index = -1;
+	if (dst != src && n != 0)
+		while (++index < n)
+			to[index] = from[index];
+	return (dst);
+}
+
+void	*bytes_move(void *dst, const void *src, size_t len)
+{
+	char	*from;
+	char	*to;
+
+	from = (char *) src;
+	to = (char *) dst;
+	if (dst == src || len == 0)
+		return (dst);
+	if (to > from)
+	{
+		from += len - 1;
+		to += len - 1;
+		while (from >= (char *) src)
+			*to-- = *from--;
+	}
+	else
+		bytes_copy(dst, src, len);
+	return (dst);
 }

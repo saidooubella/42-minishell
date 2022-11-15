@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:42:13 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/14 11:25:11 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/15 10:33:09 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,5 +30,7 @@ char	*int_to_string(int number);
 bool	string_starts_with(char *str, char *to_find, size_t to_find_len);
 ssize_t	string_index_of(char *target, char *str);
 int		string_to_int(char *str);
+void	*bytes_copy(void *dst, const void *src, size_t n);
+void	*bytes_move(void *dst, const void *src, size_t len);
 
 #endif

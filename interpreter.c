@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 10:20:00 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/14 20:13:04 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/15 10:32:22 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,50 @@ t_result	result_create(bool success, int extra)
 	return (result);
 }
 
-// TODO - REDIRECT FOR BUILTINS
+t_builtin	*initilize_builtins(void)
+{
+	t_builtin	*builtins;
+	size_t		index;
+
+	builtins = malloc(sizeof(t_builtin) * BUILTINS_COUNT);
+	if (builtins == NULL)
+		memory_error();
+	index = -1;
+	builtins[++index].name = "echo";
+	builtins[index].block = echo_builtin;
+	builtins[++index].name = "cd";
+	builtins[index].block = cd_builtin;
+	builtins[++index].name = "pwd";
+	builtins[index].block = pwd_builtin;
+	builtins[++index].name = "export";
+	builtins[index].block = export_builtin;
+	builtins[++index].name = "unset";
+	builtins[index].block = unset_builtin;
+	builtins[++index].name = "exit";
+	builtins[index].block = exit_builtin;
+	builtins[++index].name = "env";
+	builtins[index].block = env_builtin;
+	return (builtins);
+}
+
+t_builtin	*builtin_lookup(t_builtin *builtins, char *target)
+{
+	size_t		index;
+
+	index = -1;
+	while (++index < BUILTINS_COUNT)
+		if (string_equals(builtins[index].name, target))
+			return (&builtins[index]);
+	return (NULL);
+}
+
+void	redirect(int src, int dst) {
+	if (src == -1)
+		return ;
+	dup2(src, dst);
+	close(src);
+}
+
 t_result	visit_command_node(
 	t_environment *env,
 	t_command_node *node,
@@ -130,27 +173,18 @@ t_result	visit_command_node(
 {
 	if (node->args_size > 0)
 	{
-		if (string_equals(node->args->value, "echo"))
-			return (resolve_redirections(node, &in, &out, true),
-				result_create(true, echo_builtin(env, node->args_size, node->args)));
-		if (string_equals(node->args->value, "cd"))
-			return (resolve_redirections(node, &in, &out, true),
-				result_create(true, cd_builtin(env, node->args_size, node->args)));
-		if (string_equals(node->args->value, "pwd"))
-			return (resolve_redirections(node, &in, &out, true),
-				result_create(true, pwd_builtin(env, node->args_size, node->args)));
-		if (string_equals(node->args->value, "export"))
-			return (resolve_redirections(node, &in, &out, true),
-				result_create(true, export_builtin(env, node->args_size, node->args)));
-		if (string_equals(node->args->value, "unset"))
-			return (resolve_redirections(node, &in, &out, true),
-				result_create(true, unset_builtin(env, node->args_size, node->args)));
-		if (string_equals(node->args->value, "exit"))
-			return (resolve_redirections(node, &in, &out, true),
-				result_create(true, exit_builtin(env, node->args_size, node->args)));
-		if (string_equals(node->args->value, "env"))
-			return (resolve_redirections(node, &in, &out, true),
-				result_create(true, env_builtin(env, node->args_size, node->args)));
+		t_builtin *builtin = builtin_lookup(env->builtins, node->args->value);
+		if (builtin != NULL) {
+			int stdin_copy = dup(STDIN_FILENO);
+			int stdout_copy = dup(STDOUT_FILENO);
+			resolve_redirections(node, &in, &out, true);
+			redirect(in, STDIN_FILENO);
+			redirect(out, STDOUT_FILENO);
+			t_result result = result_create(true, builtin->block(env, node->args_size, node->args));
+			redirect(stdin_copy, STDIN_FILENO);
+			redirect(stdout_copy, STDOUT_FILENO);
+			return result;
+		}
 	}
 
 	t_resolve_result exec;
@@ -178,15 +212,8 @@ t_result	visit_command_node(
 
 		resolve_redirections(node, &in, &out, false);
 
-		if (in != -1) {
-			dup2(in, STDIN_FILENO);
-			close(in);
-		}
-
-		if (out != -1) {
-			dup2(out, STDOUT_FILENO);
-			close(out);
-		}
+		redirect(in, STDIN_FILENO);
+		redirect(out, STDOUT_FILENO);
 		
 		if (node->args_size > 0) {
 			char **args = unwrap_args(node->args, node->args_size);
@@ -282,11 +309,24 @@ void	initilize_defaults(t_environment *env)
 	env_put_var(env, symbol);
 }
 
+void	fill_environment(t_environment *environment, char **env)
+{
+	char		**splitted;
+	t_symbol	symbol;
+
+	while (*env)
+	{
+		splitted = string_split(*env++, "=");
+		symbol.name = string_create(splitted[0], splitted[0] != NULL);
+		symbol.value = string_create(splitted[1], splitted[1] != NULL);
+		env_put_var(environment, symbol);
+		free(splitted);
+	}
+}
+
 t_environment *environment_new(char **env)
 {
 	t_environment	*environment;
-	char			**splitted;
-	t_symbol		symbol;
 
 	environment = malloc(sizeof(t_environment));
 	if (environment == NULL)
@@ -297,16 +337,10 @@ t_environment *environment_new(char **env)
 	environment->symbols_cap = 0;
 	environment->running = true;
 	environment->working_dir = string_create(getcwd(NULL, 0), true);
+	environment->builtins = initilize_builtins();
 	if (environment->working_dir.value == NULL)
 		error("Error: Cannot retreive the current working directory");
-	while (*env)
-	{
-		splitted = string_split(*env++, "=");
-		symbol.name = string_create(splitted[0], splitted[0] != NULL);
-		symbol.value = string_create(splitted[1], splitted[1] != NULL);
-		env_put_var(environment, symbol);
-		free(splitted);
-	}
+	fill_environment(environment, env);
 	initilize_defaults(environment);
 	return (environment);
 }
@@ -322,6 +356,7 @@ void	environment_free(t_environment **env)
 		string_free(&(*env)->symbols[index].value);
 	}
 	string_free(&(*env)->working_dir);
+	free((*env)->builtins);
 	free((*env)->symbols);
 	free(*env);
 	*env = NULL;
@@ -338,7 +373,7 @@ void	env_insert_var(t_environment *env, t_symbol symbol)
 		new_symbols = malloc(sizeof(t_symbol) * new_capacity);
 		if (new_symbols == NULL)
 			memory_error();
-		memcpy(new_symbols, env->symbols, env->symbols_size * sizeof(t_symbol));
+		bytes_copy(new_symbols, env->symbols, env->symbols_size * sizeof(t_symbol));
 		free(env->symbols);
 		env->symbols_cap = new_capacity;
 		env->symbols = new_symbols;
@@ -378,7 +413,7 @@ void	env_remove_var(t_environment *env, char *name)
 	}
 	if (target == -1)
 		return ;
-	memmove(&env->symbols[target], &env->symbols[target + 1], sizeof(t_symbol) * (env->symbols_size - target));
+	bytes_move(&env->symbols[target], &env->symbols[target + 1], sizeof(t_symbol) * (env->symbols_size - target));
 	env->symbols_size--;
 }
 

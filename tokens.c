@@ -6,14 +6,14 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:22:24 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/11 10:13:47 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/15 10:32:56 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h>
 
+#include "string_utils.h"
 #include "tokens.h"
 #include "utils.h"
 
@@ -64,7 +64,7 @@ void	tokens_add(t_tokens *tokens, char *lexeme, t_token_type type)
 		new_tokens = malloc(sizeof(t_token) * new_capacity);
 		if (new_tokens == NULL)
 			memory_error();
-		memcpy(new_tokens, tokens->tokens, tokens->size * sizeof(t_token));
+		bytes_copy(new_tokens, tokens->tokens, tokens->size * sizeof(t_token));
 		free(tokens->tokens);
 		tokens->capacity = new_capacity;
 		tokens->tokens = new_tokens;

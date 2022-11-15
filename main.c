@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 11:01:21 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/14 18:14:17 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/15 10:21:27 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,13 +144,13 @@ int	main(int ac, char **av, char **env)
 		if (line == NULL)
 			break ;
 		register_handler(&g_int_action, SIGINT, SIG_IGN);
-		add_history(line);
 		lexer = lexer_new(line);
 		result = lexer_tokenize(lexer);
 		if (!result.success)
 			environment->last_exit_code = 258;
 		if (result.success && result.tokens->size > 1)
 		{
+			add_history(line);
 			// NOTE - Remove it
 			// for (size_t i = 0; i < result.tokens->size; i++) {
 			// 	printf("%s|%d\n", result.tokens->tokens[i].lexeme, result.tokens->tokens[i].type);
@@ -163,9 +163,7 @@ int	main(int ac, char **av, char **env)
 			parser.leftovers_head = 0;
 			t_optional_node root = parse(&parser);
 			if (root.present)
-			{
 				environment->last_exit_code = visit_node(environment, root.node, -1, -1, -1, true).extra;
-			}
 			else
 				environment->last_exit_code = 258;
 			node_free(root.node);
@@ -191,7 +189,7 @@ int	main(int ac, char **av, char **env)
 
 	// NOTE - ARGS ARE CASE INSENSETIVE
 
-	// TODO - U HAVE SOME MEMCPY AND PRINTF CALLS IN UR CODE U GOTTA REMOVE 'EM
+	// TODO - U HAVE SOME MEMCPY A MEMMOVE AND PRINTF CALLS IN UR CODE U GOTTA REMOVE 'EM
 
 	&& - execute right when left successed.
 	|| - execute right when left fail.

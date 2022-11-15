@@ -9,21 +9,31 @@
 #include "ft_printf.h"
 #include "parser.h"
 
+// TODO - Check for repetitive flags
 int	echo_builtin(t_environment *env, size_t argc, t_string *argv)
 {
 	bool	new_line;
+	bool	loop;
 	size_t	start;
 	size_t	cont;
+	size_t	index;
 
 	(void) env;
 	new_line = true;
+	loop = true;
 	start = 0;
-	while (++start < argc)
+	while (loop && ++start < argc)
 	{
-		if (!string_equals(argv[start].value, "-n"))
+		if (!string_starts_with(argv[start].value, "-", 1)
+			|| string_equals(argv[start].value, "-"))
 			break;
+		index = 0;
+		while (argv[start].value[++index])
+			if (argv[start].value[index] != 'n')
+				goto out;
 		new_line = false;
 	}
+	out:
 	cont = start - 1;
 	while (++cont < argc)
 	{
