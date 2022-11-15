@@ -6,10 +6,11 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:41:23 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/10 17:08:38 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/14 12:04:52 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <sys/types.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -137,26 +138,34 @@ int	are_equals(char *s1, char *s2)
 	return (0);
 }
 
-static size_t	calc_words_count(char *string, char sep)
+static int	contains(char *sequence, char target)
+{
+	while (*sequence)
+		if (*sequence++ == target)
+			return (1);
+	return (0);
+}
+
+static size_t	calc_words_count(char *string, char *seps)
 {
 	size_t	count;
 
 	count = 0;
 	while (1)
 	{
-		while (*string && *string == sep)
+		while (*string && contains(seps, *string))
 			string++;
 		if (*string == 0)
 			break ;
 		count++;
-		while (*string && *string != sep)
+		while (*string && !contains(seps, *string))
 			string++;
 	}
 	return (count);
 }
 
 static char	*split_substring(
-	char **strings, char **src_string, size_t *src_index, char sep)
+	char **strings, char **src_string, size_t *src_index, char *seps)
 {
 	size_t	substring_length;
 	char	*substring;
@@ -165,46 +174,47 @@ static char	*split_substring(
 
 	string = *src_string;
 	substring_length = 0;
-	while (string[substring_length] && string[substring_length] != sep)
+	while (string[substring_length] && !contains(seps, string[substring_length]))
 		substring_length++;
 	substring = malloc(sizeof(char) * (substring_length + 1));
-	if (substring == 0)
+	if (substring == NULL)
 	{
+		(*src_index)--;
 		while (*src_index >= 0)
 			free(strings[(*src_index)--]);
 		free(strings);
-		return (0);
+		return (NULL);
 	}
 	i = 0;
 	while (*string && i < substring_length)
 		substring[i++] = *string++;
-	substring[i] = 0;
+	substring[i] = '\0';
 	*src_string = string;
 	return (substring);
 }
 
-char	**string_split(char *string, char sep)
+char	**string_split(char *string, char *seps)
 {
 	char	*substring;
 	size_t	words_count;
 	char	**strings;
 	size_t	index;
 
-	words_count = calc_words_count(string, sep);
+	words_count = calc_words_count(string, seps);
 	strings = malloc(sizeof(char *) * (words_count + 1));
-	if (strings == 0)
+	if (strings == NULL)
 		memory_error();
 	index = 0;
 	while (index < words_count)
 	{
-		while (*string == sep)
+		while (*string && contains(seps, *string))
 			string++;
-		substring = split_substring(strings, &string, &index, sep);
-		if (substring == 0)
+		substring = split_substring(strings, &string, &index, seps);
+		if (substring == NULL)
 			memory_error();
 		strings[index++] = substring;
 	}
-	strings[index] = 0;
+	strings[index] = NULL;
 	return (strings);
 }
 
@@ -261,4 +271,68 @@ char	*substring(char *string, size_t start, size_t end)
 	}
 	substr[index] = '\0';
 	return (substr);
+}
+
+bool	string_starts_with(char *str, char *to_find, size_t to_find_len)
+{
+	size_t	i;
+
+	i = 0;
+	while (str[i] && i < to_find_len)
+	{
+		if (str[i] != to_find[i])
+			return (false);
+		i++;
+	}
+	return (i == to_find_len);
+}
+
+ssize_t	string_index_of(char *target, char *str)
+{
+	size_t	str_len;
+	size_t	index;
+
+	index = 0;
+	str_len = string_length(str);
+	while (target[index])
+	{
+		if (string_starts_with(&target[index], str, str_len))
+			return (index);
+		index++;
+	}
+	return (-1);
+}
+
+bool	is_whitespace(char c)
+{
+	return (c == '\t' || c == '\n' || c == '\r'
+		|| c == ' ' || c == '\v' || c == '\f');
+}
+
+bool	is_digit(char c)
+{
+	return ('0' <= c && c <= '9');
+}
+
+int	string_to_int(char *str)
+{
+	int	sign;
+	int	res;
+
+	sign = 1;
+	res = 0;
+	while (is_whitespace(*str))
+		str++;
+	while (*str == '+' || *str == '-')
+	{
+		if (*str++ == '-')
+			sign *= -1;
+	}
+	while (is_digit(*str))
+	{
+		res *= 10;
+		res += *str - '0';
+		str++;
+	}
+	return (res * sign);
 }

@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 10:20:00 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/12 19:01:37 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/14 20:13:04 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 #include <fcntl.h>
 #include <errno.h>
 
+#include "string_builder.h"
+#include "exec_resolver.h"
 #include "interpreter.h"
 #include "ft_printf.h"
 #include "builtins.h"
@@ -70,10 +72,11 @@ int	await_process(int pid)
 	return (WTERMSIG(status) + 128);
 }
 
-void	resolve_redirections(t_command_node *node, int *in, int *out)
+void	resolve_redirections(t_command_node *node, int *in, int *out, bool builtin)
 {
 	size_t	index;
 
+	(void) builtin;
 	index = -1;
 	while (++index < node->redirections_size)
 	{
@@ -88,7 +91,7 @@ void	resolve_redirections(t_command_node *node, int *in, int *out)
 			if (*out != -1)
 				close(*out);
 			*out = open(redirect.extra.value, O_WRONLY | O_TRUNC | O_CREAT, 0644);
-			if (*in == -1)
+			if (*out == -1)
 				error("minishell: %s: %s", strerror(errno), redirect.extra.value);
 		} else if (redirect.type == HEREDOC) {
 			if (*in != -1)
@@ -102,13 +105,23 @@ void	resolve_redirections(t_command_node *node, int *in, int *out)
 			if (*out != -1)
 				close(*out);
 			*out = open(redirect.extra.value, O_WRONLY | O_CREAT | O_APPEND, 0644);
-			if (*in == -1)
+			if (*out == -1)
 				error("minishell: %s: %s", strerror(errno), redirect.extra.value);
 		}
 	}
 }
 
-int	visit_command_node(
+t_result	result_create(bool success, int extra)
+{
+	t_result	result;
+
+	result.success = success;
+	result.extra = extra;
+	return (result);
+}
+
+// TODO - REDIRECT FOR BUILTINS
+t_result	visit_command_node(
 	t_environment *env,
 	t_command_node *node,
 	int in, int out, int to_be_closed,
@@ -118,61 +131,52 @@ int	visit_command_node(
 	if (node->args_size > 0)
 	{
 		if (string_equals(node->args->value, "echo"))
-			return (echo_builtin(env, node->args_size, node->args));
+			return (resolve_redirections(node, &in, &out, true),
+				result_create(true, echo_builtin(env, node->args_size, node->args)));
 		if (string_equals(node->args->value, "cd"))
-			return (cd_builtin(env, node->args_size, node->args));
+			return (resolve_redirections(node, &in, &out, true),
+				result_create(true, cd_builtin(env, node->args_size, node->args)));
 		if (string_equals(node->args->value, "pwd"))
-			return (pwd_builtin(env, node->args_size, node->args));
+			return (resolve_redirections(node, &in, &out, true),
+				result_create(true, pwd_builtin(env, node->args_size, node->args)));
 		if (string_equals(node->args->value, "export"))
-			return (export_builtin(env, node->args_size, node->args));
+			return (resolve_redirections(node, &in, &out, true),
+				result_create(true, export_builtin(env, node->args_size, node->args)));
 		if (string_equals(node->args->value, "unset"))
-			return (unset_builtin(env, node->args_size, node->args));
+			return (resolve_redirections(node, &in, &out, true),
+				result_create(true, unset_builtin(env, node->args_size, node->args)));
 		if (string_equals(node->args->value, "exit"))
-			return (exit_builtin(env, node->args_size, node->args));
+			return (resolve_redirections(node, &in, &out, true),
+				result_create(true, exit_builtin(env, node->args_size, node->args)));
 		if (string_equals(node->args->value, "env"))
-			return (env_builtin(env, node->args_size, node->args));
+			return (resolve_redirections(node, &in, &out, true),
+				result_create(true, env_builtin(env, node->args_size, node->args)));
+	}
+
+	t_resolve_result exec;
+	
+	if (node->args_size > 0) {
+		exec = resolve_executable(env, node->args[0].value);
+		if (exec.err_type != NONE)
+		{
+			ft_printf(STDERR_FILENO, "minishell: %s: %s\n", node->args[0].value, error_msg(exec.err_type));
+			if (exec.err_type == NOT_FOUND)
+				return (result_create(false, 127));
+			else if (exec.err_type == PERMISSION_DENIED)
+				return (result_create(false, 126));
+			error("Illegal state in 'visit_command_node'");
+			return (result_create(false, 0));
+		}
 	}
 
 	int	pid = fork();
 
 	if (pid == 0) {
 
-		size_t	index;
-
 		if (to_be_closed != -1)
 			close(to_be_closed);
-		index = -1;
-		while (++index < node->redirections_size)
-		{
-			t_redirection redirect = node->redirections[index];
-			if (redirect.type == INPUT) {
-				if (in != -1)
-					close(in);
-				in = open(redirect.extra.value, O_RDONLY);
-				if (in == -1)
-					error("minishell: %s: %s", strerror(errno), redirect.extra.value);
-			} else if (redirect.type == OUTPUT) {
-				if (out != -1)
-					close(out);
-				out = open(redirect.extra.value, O_WRONLY | O_TRUNC | O_CREAT, 0644);
-				if (in == -1)
-					error("minishell: %s: %s", strerror(errno), redirect.extra.value);
-			} else if (redirect.type == HEREDOC) {
-				if (in != -1)
-					close(in);
-				int read_write[2];
-				pipe(read_write);
-				write(read_write[1], redirect.extra.value, string_length(redirect.extra.value));
-				close(read_write[1]);
-				in = read_write[0];
-			} else if (redirect.type == APPEND) {
-				if (out != -1)
-					close(out);
-				out = open(redirect.extra.value, O_WRONLY | O_CREAT | O_APPEND, 0644);
-				if (in == -1)
-					error("minishell: %s: %s", strerror(errno), redirect.extra.value);
-			}
-		}
+
+		resolve_redirections(node, &in, &out, false);
 
 		if (in != -1) {
 			dup2(in, STDIN_FILENO);
@@ -187,23 +191,25 @@ int	visit_command_node(
 		if (node->args_size > 0) {
 			char **args = unwrap_args(node->args, node->args_size);
 			char **envp = unwrap_env(env->symbols, env->symbols_size);
-			execve(args[0], args, envp);
-			error("minishell: %s: %s", strerror(errno), args[0]);
+			execve(exec.executable_path.string.value, args, envp);
+			ft_printf(STDERR_FILENO, "minishell: %s: %s\n", args[0], strerror(errno));
 		}
 		
-		exit(0);
+		exit(1);
 	}
+	if (exec.executable_path.present)
+		string_free(&exec.executable_path.string);
 	if (should_wait)
-		return (await_process(pid));
-	return (pid);
+		return (result_create(true, await_process(pid)));
+	return (result_create(true, pid));
 }
 
-int	visit_parent_node(t_environment *env, t_parent_node *node, int in, int out, int to_be_closed, bool should_wait)
+t_result	visit_parent_node(t_environment *env, t_parent_node *node, int in, int out, int to_be_closed, bool should_wait)
 {
 	return (visit_node(env, node->expression, in, out, to_be_closed, should_wait));
 }
 
-int	visit_pipe_node(t_environment *env, t_pipe_node *node, int in, int out, int to_be_closed, bool should_wait)
+t_result	visit_pipe_node(t_environment *env, t_pipe_node *node, int in, int out, int to_be_closed, bool should_wait)
 {
 	(void) to_be_closed;
 	(void) should_wait;
@@ -211,35 +217,38 @@ int	visit_pipe_node(t_environment *env, t_pipe_node *node, int in, int out, int 
 	(void) env;
 	int read_write[2];
 	pipe(read_write);
-	int pid1 = visit_node(env, node->left, in, read_write[1], read_write[0], false);
-	int pid2 = visit_node(env, node->right, read_write[0], out, read_write[1], false);
+	t_result pid1 = visit_node(env, node->left, in, read_write[1], read_write[0], false);
+	t_result pid2 = visit_node(env, node->right, read_write[0], out, read_write[1], false);
 	close(read_write[0]);
 	close(read_write[1]);
-	await_process(pid1);
-	return (await_process(pid2));
+	if (pid1.success)
+		await_process(pid1.extra);
+	if (pid2.success)
+		return (result_create(true, await_process(pid2.extra)));
+	return (pid2);
 }
 
-int	visit_conjuction_node(t_environment *env, t_conjuction_node *node, int in, int out, int to_be_closed, bool should_wait)
+t_result	visit_conjuction_node(t_environment *env, t_conjuction_node *node, int in, int out, int to_be_closed, bool should_wait)
 {
 	(void) node;
 	(void) env;
 	if (string_equals(node->operator->lexeme, "&&")) {
-		int res = visit_node(env, node->left, in, out, to_be_closed, should_wait);
-		if (res != 0)
-			return res;
-		return visit_node(env, node->right, in, out, to_be_closed, should_wait);
+		t_result res = visit_node(env, node->left, in, out, to_be_closed, should_wait);
+		if (res.success && res.extra != 0)
+			return (res);
+		return (visit_node(env, node->right, in, out, to_be_closed, should_wait));
 	} else if (string_equals(node->operator->lexeme, "||")) {
-		int res = visit_node(env, node->left, in, out, to_be_closed, should_wait);
-		if (res == 0)
-			return res;
-		return visit_node(env, node->right, in, out, to_be_closed, should_wait);
+		t_result res = visit_node(env, node->left, in, out, to_be_closed, should_wait);
+		if (res.success && res.extra == 0)
+			return (res);
+		return (visit_node(env, node->right, in, out, to_be_closed, should_wait));
 	} else {
 		error("Error: Illegal state in 'visit_conjuction_node'");
-		return (0);
+		return (result_create(false, 0));
 	}
 }
 
-int	visit_node(t_environment *env, t_node *node, int in, int out, int to_be_closed, bool should_wait)
+t_result	visit_node(t_environment *env, t_node *node, int in, int out, int to_be_closed, bool should_wait)
 {
 	if (node->type == COMMAND_NODE)
 		return (visit_command_node(env, (t_command_node *) node, in, out, to_be_closed, should_wait));
@@ -252,15 +261,32 @@ int	visit_node(t_environment *env, t_node *node, int in, int out, int to_be_clos
 	else
 	{
 		error("Error: Illegal state in 'visit_node'");
-		return (0);
+		return (result_create(false, 0));
 	}
 }
 
 // --------------------------------------------------------
 
+void	initilize_defaults(t_environment *env)
+{
+	t_symbol		symbol;
+
+	symbol.name = string_create("PWD", false);
+	symbol.value = string_create(env->working_dir.value, false);
+	env_put_var(env, symbol);
+	symbol.name = string_create("SHLVL", false);
+	symbol.value = string_create(int_to_string(string_to_int(env_get_var(env, "SHLVL", "")) + 1), true);
+	env_put_var(env, symbol);
+	symbol.name = string_create("_", false);
+	symbol.value = string_create("/usr/bin/env", false);
+	env_put_var(env, symbol);
+}
+
 t_environment *environment_new(char **env)
 {
 	t_environment	*environment;
+	char			**splitted;
+	t_symbol		symbol;
 
 	environment = malloc(sizeof(t_environment));
 	if (environment == NULL)
@@ -275,13 +301,13 @@ t_environment *environment_new(char **env)
 		error("Error: Cannot retreive the current working directory");
 	while (*env)
 	{
-		char **splitted = string_split(*env++, '=');
-		t_symbol symbol;
+		splitted = string_split(*env++, "=");
 		symbol.name = string_create(splitted[0], splitted[0] != NULL);
 		symbol.value = string_create(splitted[1], splitted[1] != NULL);
 		env_put_var(environment, symbol);
 		free(splitted);
 	}
+	initilize_defaults(environment);
 	return (environment);
 }
 
@@ -341,13 +367,14 @@ void	env_remove_var(t_environment *env, char *name)
 
 	target = -1;
 	index = -1;
+	if (string_equals(name, "_"))
+		return ;
 	while (++index < env->symbols_size)
 	{
-		if (string_equals(env->symbols[index].name.value, name))
-		{
-			target = index;
-			break ;
-		}
+		if (!string_equals(env->symbols[index].name.value, name))
+			continue ;
+		target = index;
+		break ;
 	}
 	if (target == -1)
 		return ;

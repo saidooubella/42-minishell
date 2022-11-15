@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 10:40:35 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/11 13:36:17 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/14 17:17:03 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,13 @@ typedef struct s_environment
 	bool		running;
 }	t_environment;
 
-int				visit_node(t_environment *env, t_node *node, int in, int out, int to_be_closed, bool should_wait);
+typedef struct s_result
+{
+	bool	success;
+	int		extra;
+}	t_result;
+
+t_result		visit_node(t_environment *env, t_node *node, int in, int out, int to_be_closed, bool should_wait);
 char			*env_get_var(t_environment *env, char *name, char *fallback);
 void			env_insert_var(t_environment *env, t_symbol symbol);
 void			env_put_var(t_environment *env, t_symbol symbol);

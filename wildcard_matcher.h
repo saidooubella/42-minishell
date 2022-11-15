@@ -1,34 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   string_builder2.c                                  :+:      :+:    :+:   */
+/*   wildcard_matcher.h                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/10/20 11:33:26 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/14 15:48:02 by soubella         ###   ########.fr       */
+/*   Created: 2022/11/13 16:07:50 by soubella          #+#    #+#             */
+/*   Updated: 2022/11/13 16:08:08 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdlib.h>
+#ifndef WILDCARD_MATCHER_H
+# define WILDCARD_MATCHER_H
 
-#include "string_builder.h"
-#include "string_utils.h"
+# include "string.h"
 
-void	string_builder_append_cstring(
-	t_string_builder *b, const char *str)
-{
-	string_builder_append_string(b, str, string_length(str));
-}
+t_string apply_pattern(char *pattern, char *directory);
 
-void	string_builder_clear(t_string_builder *b)
-{
-	b->size = 0;
-}
-
-void	string_builder_free(t_string_builder **b)
-{
-	free((*b)->buffer);
-	free(*b);
-	*b = 0;
-}
+#endif

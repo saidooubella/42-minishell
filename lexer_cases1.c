@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:28:08 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/11 11:27:25 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/14 11:30:24 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,18 +39,14 @@ bool	lexer_tokenize_identifier(t_lexer *lexer, t_tokens *tokens)
 	lexer_tokenize_token(lexer, tokens, DOLLAR, 1);
 	start = lexer->index;
 	if (lexer_current(lexer) == '?')
-	{
 		lexer->index++;
-		tokens_smart_add(lexer, tokens, substring(lexer->content,
-				start, lexer->index), VARIABLE);
-	}
 	else
 	{
 		while (is_identifier_cont(lexer_current(lexer)))
 			lexer->index++;
-		tokens_smart_add(lexer, tokens, substring(lexer->content,
-				start, lexer->index), VARIABLE);
 	}
+	tokens_smart_add(lexer, tokens, substring(lexer->content,
+			start, lexer->index), VARIABLE);
 	return (true);
 }
 
@@ -72,7 +68,7 @@ bool	lexer_tokenize_raw_string(t_lexer *lexer, t_tokens *tokens)
 {
 	size_t	start;
 
-	lexer->index++;
+	lexer_tokenize_token(lexer, tokens, OPEN_SINGLE_QUOTE, 1);
 	start = lexer->index;
 	while (!lexer_reached_end(lexer) && lexer_current(lexer) != '\'')
 		lexer->index += 1;
@@ -80,7 +76,7 @@ bool	lexer_tokenize_raw_string(t_lexer *lexer, t_tokens *tokens)
 			start, lexer->index), WORD);
 	if (lexer_current(lexer) == '\'')
 	{
-		lexer->index++;
+		lexer_tokenize_token(lexer, tokens, CLOSE_SINGLE_QUOTE, 1);
 		return (true);
 	}
 	ft_printf(STDERR_FILENO, "Error: unterminated string literal\n");

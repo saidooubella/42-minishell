@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 11:01:21 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/12 20:07:53 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/14 18:14:17 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,20 +147,29 @@ int	main(int ac, char **av, char **env)
 		add_history(line);
 		lexer = lexer_new(line);
 		result = lexer_tokenize(lexer);
+		if (!result.success)
+			environment->last_exit_code = 258;
 		if (result.success && result.tokens->size > 1)
 		{
-			// TODO
-			// for (size_t i = 0; i < tokens->size; i++) {
-			// 	printf("%s|%d\n", tokens->tokens[i].lexeme, tokens->tokens[i].type);
+			// NOTE - Remove it
+			// for (size_t i = 0; i < result.tokens->size; i++) {
+			// 	printf("%s|%d\n", result.tokens->tokens[i].lexeme, result.tokens->tokens[i].type);
 			// }
 			t_parser	parser;
 			parser.index = 0;
 			parser.tokens = result.tokens;
 			parser.env = environment;
+			parser.leftovers = tokens_new();
+			parser.leftovers_head = 0;
 			t_optional_node root = parse(&parser);
 			if (root.present)
-				environment->last_exit_code = visit_node(environment, root.node, -1, -1, -1, true);
+			{
+				environment->last_exit_code = visit_node(environment, root.node, -1, -1, -1, true).extra;
+			}
+			else
+				environment->last_exit_code = 258;
 			node_free(root.node);
+			tokens_free(&parser.leftovers);
 		}
 		tokens_free(&result.tokens);
 		lexer_free(&lexer);
@@ -182,7 +191,7 @@ int	main(int ac, char **av, char **env)
 
 	// NOTE - ARGS ARE CASE INSENSETIVE
 
-	// TODO   - U HAVE SOME MEMCPY AND PRINTF CALLS IN UR CODE U GOTTA REMOVE 'EM
+	// TODO - U HAVE SOME MEMCPY AND PRINTF CALLS IN UR CODE U GOTTA REMOVE 'EM
 
 	&& - execute right when left successed.
 	|| - execute right when left fail.
@@ -199,15 +208,14 @@ int	main(int ac, char **av, char **env)
 
 	pipeline	:	prefix '|' prefix
 
-	prefix		:	((('<' | '>' | '>>') FILE_NAME) | ('<<' DELIMITER)) prefix
-				|	suffix
-
-	suffix		:	atom+ ((('<' | '>' | '>>') FILE_NAME) | ('<<' DELIMITER))
-
 	atom		:	WORD
 				|	'"([^"]|$[a-z_][a-z0-9_]+)*"'
 				|	"'([^'])*'"
-				|	'(' start ')'
+				|	'(' expresions ')'
+				|	'<<'	LIMITER
+				|	'>>'	FILE
+				|	'>'		FILE
+				|	'<'		FILE
 
 */
 
@@ -222,7 +230,6 @@ int	main(int ac, char **av, char **env)
 */
 
 /*
-
  - Requirements:
     - A prompt.
 	- History.
@@ -239,5 +246,4 @@ int	main(int ac, char **av, char **env)
 	- Implement 'echo' with the flag '-n', 'cd', 'pwd', 'export', 'unset', 'env' and 'exit'.
 	- Implement '&&' and '||' with respect to the precedence.
 	- The wildcard * must be handled for the current working directory.
-
 */
