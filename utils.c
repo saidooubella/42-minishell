@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 13:43:50 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/14 11:30:40 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/15 13:32:16 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ static bool	is_other_special(t_token_type type)
 	if (type == DOUBLE_GREATER_THAN || type == DOUBLE_AMPERSAND
 		|| type == DOUBLE_LESS_THAN || type == OPEN_PARENT
 		|| type == CLOSE_PARENT || type == GREATER_THAN
-		|| type == DOUBLE_PIPE || type == END_OF_FILE
+		|| type == DOUBLE_PIPE || type == END_OF_FILE || type == PIPE
 		|| type == CLOSE_DOUBLE_QUOTE || type == CLOSE_SINGLE_QUOTE)
 		return (true);
 	return (false);
@@ -32,7 +32,7 @@ static bool	is_self_special(t_token_type type)
 {
 	if (type == DOUBLE_GREATER_THAN || type == DOUBLE_AMPERSAND
 		|| type == DOUBLE_LESS_THAN || type == OPEN_DOUBLE_QUOTE
-		|| type == CLOSE_PARENT || type == GREATER_THAN
+		|| type == CLOSE_PARENT || type == GREATER_THAN || type == PIPE
 		|| type == DOLLAR || type == OPEN_PARENT || type == DOUBLE_PIPE
 		|| type == OPEN_SINGLE_QUOTE || type == END_OF_FILE)
 		return (true);

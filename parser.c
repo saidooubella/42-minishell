@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parser.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/11/15 10:38:20 by soubella          #+#    #+#             */
+/*   Updated: 2022/11/16 10:21:01 by soubella         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <stdbool.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -16,6 +28,27 @@
 #include "utils.h"
 #include "nodes.h"
 #include "main.h"
+
+t_parser	*parser_new(t_tokens *tokens, t_environment *env)
+{
+	t_parser	*parser;
+
+	parser = malloc(sizeof(t_parser));
+	if (parser == NULL)
+		memory_error();
+	parser->index = 0;
+	parser->tokens = tokens;
+	parser->env = env;
+	parser->leftovers = tokens_new();
+	parser->leftovers_head = 0;
+	return (parser);
+}
+
+void	parser_free(t_parser **parser)
+{
+	tokens_free(&(*parser)->leftovers);
+	free(*parser);
+}
 
 bool	parser_current_is(t_parser *parser, t_token_type type)
 {
@@ -37,7 +70,7 @@ t_optional_token	parser_expect(t_parser *parser, t_token_type type, char *expect
 {
 	if (parser_current_is(parser, type))
 		return (token_optional(parser_consume(parser), true));
-	ft_printf(STDERR_FILENO, "Error: Expected '%s' but got '%s\n", expected, parser_consume(parser)->lexeme);
+	ft_printf(STDERR_FILENO, "Error: Expected '%s' but got '%s'\n", expected, parser_consume(parser)->lexeme);
 	return (token_optional(NULL, false));
 }
 
@@ -72,7 +105,7 @@ t_string	unit_expression(t_parser *parser, bool vars_expantion, bool *wildcard_e
 					char *name = parser_consume(parser)->lexeme;
 					if (string_equals(name, "?"))
 					{
-						char *num = int_to_string(parser->env->last_exit_code);
+						char *num = llong_to_string(parser->env->exit_code);
 						string_builder_append_cstring(builder, num);
 						free(num);
 					}
@@ -114,7 +147,7 @@ t_string	unit_expression(t_parser *parser, bool vars_expantion, bool *wildcard_e
 		{
 			char *name = parser_consume(parser)->lexeme;
 			if (string_equals(name, "?"))
-				return (string_create(int_to_string(parser->env->last_exit_code), true));
+				return (string_create(llong_to_string(parser->env->exit_code), true));
 			char *value = env_get_var(parser->env, name, "");
 			if (*value != '\0')
 			{
@@ -222,20 +255,20 @@ t_optional_string	read_from_stdin(t_environment *env, char *limiter, bool expand
 	success = true;
 	result = NULL;
 	line = NULL;
-	register_handler(&g_int_action, SIGINT, sigint_close_handler);
+	signal(SIGINT, sigint_close_handler);
 	while (1)
 	{
-		g_in_fd = -1;
+		g_globals.in_fd = -1;
 		line = readline("> ");
-		if (g_in_fd != -1 || line == NULL)
+		if (g_globals.in_fd != -1 || line == NULL)
 		{
-			if (g_in_fd != -1)
+			if (g_globals.in_fd != -1)
 			{
-				dup2(g_in_fd, STDIN_FILENO);
-				close(g_in_fd);
-				g_in_fd = -1;
+				dup2(g_globals.in_fd, STDIN_FILENO);
+				close(g_globals.in_fd);
+				g_globals.in_fd = -1;
+				success = false;
 			}
-			success = false;
 			break ;
 		}
 		if (string_equals(limiter, line))
@@ -252,13 +285,15 @@ t_optional_string	read_from_stdin(t_environment *env, char *limiter, bool expand
 		free(line);
 		line = NULL;
 	}
-	register_handler(&g_int_action, SIGINT, sigint_handler);
+	signal(SIGINT, sigint_handler);
 	free(line);
 	if (success)
 		result = string_builder_to_cstr(builder);
 	string_builder_free(&builder);
 	return (string_optional(string_create(result, success), success));
 }
+
+t_optional_node	conjuction_expression(t_parser *parser);
 
 t_optional_node	primary_expression(t_parser *parser)
 {
@@ -269,7 +304,7 @@ t_optional_node	primary_expression(t_parser *parser)
 	if (parser_current_is(parser, OPEN_PARENT))
 	{
 		left_parent = parser_consume(parser);
-		expression = parse(parser);
+		expression = conjuction_expression(parser);
 		if (!expression.present)
 			return (expression);
 		right_parent = parser_expect(parser, CLOSE_PARENT, ")");
@@ -369,5 +404,10 @@ t_optional_node	conjuction_expression(t_parser *parser)
 
 t_optional_node	parse(t_parser *parser)
 {
-	return (conjuction_expression(parser));
+	t_optional_node	root;
+
+	root = conjuction_expression(parser);
+	if (root.present && parser->index < parser->tokens->size - 1)
+		ft_printf(STDERR_FILENO, "Error: Unexpected '%s'\n", parser_consume(parser)->lexeme);
+	return (node_optional(root.node, parser->index >= parser->tokens->size - 1));
 }

@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   builtins.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/11/15 10:37:37 by soubella          #+#    #+#             */
+/*   Updated: 2022/11/16 10:14:53 by soubella         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <unistd.h>
@@ -9,7 +21,43 @@
 #include "ft_printf.h"
 #include "parser.h"
 
-// TODO - Check for repetitive flags
+t_builtin	*initilize_builtins(void)
+{
+	t_builtin	*builtins;
+	size_t		index;
+
+	builtins = malloc(sizeof(t_builtin) * BUILTINS_COUNT);
+	if (builtins == NULL)
+		memory_error();
+	index = -1;
+	builtins[++index].name = "echo";
+	builtins[index].block = echo_builtin;
+	builtins[++index].name = "cd";
+	builtins[index].block = cd_builtin;
+	builtins[++index].name = "pwd";
+	builtins[index].block = pwd_builtin;
+	builtins[++index].name = "export";
+	builtins[index].block = export_builtin;
+	builtins[++index].name = "unset";
+	builtins[index].block = unset_builtin;
+	builtins[++index].name = "exit";
+	builtins[index].block = exit_builtin;
+	builtins[++index].name = "env";
+	builtins[index].block = env_builtin;
+	return (builtins);
+}
+
+t_builtin	*builtin_lookup(t_builtin *builtins, char *target)
+{
+	size_t		index;
+
+	index = -1;
+	while (++index < BUILTINS_COUNT)
+		if (string_equals(builtins[index].name, target))
+			return (&builtins[index]);
+	return (NULL);
+}
+
 int	echo_builtin(t_environment *env, size_t argc, t_string *argv)
 {
 	bool	new_line;
@@ -29,11 +77,16 @@ int	echo_builtin(t_environment *env, size_t argc, t_string *argv)
 			break;
 		index = 0;
 		while (argv[start].value[++index])
+		{
 			if (argv[start].value[index] != 'n')
-				goto out;
-		new_line = false;
+			{
+				loop = false;
+				break ;
+			}
+		}
+		if (loop)
+			new_line = false;
 	}
-	out:
 	cont = start - 1;
 	while (++cont < argc)
 	{
@@ -94,6 +147,9 @@ int	cd_builtin(t_environment *env, size_t argc, t_string *argv)
 		return (1);
 	}
 	env->working_dir = target;
+	symbol.name = string_create("PWD", false);
+	symbol.value = string_create(env->working_dir.value, false);
+	env_put_var(env, symbol);
 	return (0);
 }
 
@@ -172,7 +228,7 @@ int	unset_builtin(t_environment *env, size_t argc, t_string *argv)
 		if (arg[jndex] != '\0')
 		{
 			ft_printf(STDERR_FILENO, "export: `%s': not a valid identifier\n", arg);
-			continue ;
+			return (1);
 		}
 		env_remove_var(env, arg);
 	}
@@ -201,8 +257,32 @@ int	env_builtin(t_environment *env, size_t argc, t_string *argv)
 
 int	exit_builtin(t_environment *env, size_t argc, t_string *argv)
 {
-	(void) argc;
+	bool		error;
+	long long	exit_code;
+
+	(void) env;
 	(void) argv;
-	env->running = false;
-	return (0);
+	if (argc <= 1)
+	{
+		ft_printf(STDOUT_FILENO, "exit\n", argv->value);
+		exit(0);
+	}
+	exit_code = string_to_llong(argv[1].value, &error);
+	ft_printf(STDOUT_FILENO, "exit\n", argv->value);
+	if (error)
+	{
+		exit_code = 255;
+		ft_printf(STDERR_FILENO, "exit: %s: numeric argument required\n", argv[1].value);
+	}
+	else if (argc > 2)
+	{
+		ft_printf(STDERR_FILENO, "exit: too many arguments\n");
+		return (1);
+	}
+	else
+	{
+		exit_code = 255;
+		ft_printf(STDERR_FILENO, "exit: %s: numeric argument required\n", argv[1].value);
+	}
+	exit(exit_code & 0xFF);
 }

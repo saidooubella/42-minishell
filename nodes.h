@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 13:38:46 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/11 10:21:11 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/15 11:16:34 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,5 +93,6 @@ t_node			*command_node_new(void);
 void			command_add_arg(t_node	*_node, t_string arg);
 void			command_add_redirection(
 					t_node	*_node, t_redirection_type type, t_string extra);
+void			node_free(t_node *node);
 
 #endif

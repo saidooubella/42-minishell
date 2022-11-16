@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:41:23 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/15 10:33:13 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/15 18:47:02 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,13 +33,13 @@ static int	digits_count(unsigned int number)
 	return (count);
 }
 
-char	*int_to_string(int n)
+char	*llong_to_string(long long n)
 {
-	unsigned int number;
-	char		*result;
-	int			size;
-	int			end;
-	int			i;
+	unsigned long long	number;
+	char				*result;
+	int					size;
+	int					end;
+	int					i;
 
 	number = n;
 	end = 0;
@@ -86,13 +86,6 @@ char	*string_join(char const *s1, char const *s2)
 		memory_error();
 	*append(append(res, s1), s2) = 0;
 	return (res);
-}
-
-int	to_lower(int ch)
-{
-	if ('A' <= ch && ch <= 'Z')
-		return (ch + 32);
-	return (ch);
 }
 
 int	string_compare(const char *s1, const char *s2, size_t n)
@@ -314,26 +307,34 @@ bool	is_digit(char c)
 	return ('0' <= c && c <= '9');
 }
 
-int	string_to_int(char *str)
+long long	string_to_llong(char *str, bool *error)
 {
-	int	sign;
-	int	res;
+	int					sign;
+	unsigned long long	temp;
+	unsigned long long	res;
 
+	*error = false;
 	sign = 1;
 	res = 0;
 	while (is_whitespace(*str))
 		str++;
-	while (*str == '+' || *str == '-')
-	{
+	if (*str == '+' || *str == '-')
 		if (*str++ == '-')
 			sign *= -1;
-	}
+	if (*str == '\0')
+		*error = true;
 	while (is_digit(*str))
 	{
-		res *= 10;
-		res += *str - '0';
-		str++;
+		temp = (res * 10) + (*str++ - '0');
+		if (temp < res || (sign == 1 && temp > _LONG_MAX) || (sign == -1 && temp > _LONG_MIN))
+		{
+			*error = true;
+			return (res * sign);
+		}
+		res = temp;
 	}
+	if (*str != '\0')
+		*error = true;
 	return (res * sign);
 }
 
