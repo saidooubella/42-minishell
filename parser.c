@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/15 10:38:20 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/16 10:21:01 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/19 12:13:42 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 #include "interpreter.h"
 #include "lexer_utils.h"
 #include "ft_printf.h"
+#include "element.h"
 #include "tokens.h"
 #include "parser.h"
 #include "utils.h"
@@ -39,14 +40,11 @@ t_parser	*parser_new(t_tokens *tokens, t_environment *env)
 	parser->index = 0;
 	parser->tokens = tokens;
 	parser->env = env;
-	parser->leftovers = tokens_new();
-	parser->leftovers_head = 0;
 	return (parser);
 }
 
 void	parser_free(t_parser **parser)
 {
-	tokens_free(&(*parser)->leftovers);
 	free(*parser);
 }
 
@@ -57,8 +55,7 @@ bool	parser_current_is(t_parser *parser, t_token_type type)
 
 bool	parser_reached_end(t_parser *parser)
 {
-	return (parser->leftovers->size - parser->leftovers_head <= 0
-		&& parser_current_is(parser, END_OF_FILE));
+	return (parser_current_is(parser, END_OF_FILE));
 }
 
 t_token	*parser_consume(t_parser *parser)
@@ -74,134 +71,99 @@ t_optional_token	parser_expect(t_parser *parser, t_token_type type, char *expect
 	return (token_optional(NULL, false));
 }
 
-t_string	unit_expression(t_parser *parser, bool vars_expantion, bool *wildcard_expantion, bool *has_quotes)
+t_optional_elements	unit_expression(t_parser *parser, bool vars_expantion, bool *wildcard_expantion, bool *has_quotes)
 {
-	t_string_builder	*builder;
-	t_token				*dollar;
-	char				*result;
+	t_token	*dollar;
 
-	if (parser->leftovers->size - parser->leftovers_head > 0)
-	{
-		t_token *leftover = &parser->leftovers->tokens[parser->leftovers_head++];
-		return (string_create(leftover->lexeme, false));
-	}
 	if (parser_current_is(parser, WORD))
-		return (string_create(parser_consume(parser)->lexeme, false));
+	{
+		t_elements *elements = elements_new_cap(1);
+		elements_add(elements, string_create(parser_consume(parser)->lexeme, false), WORD_ELEMENT, false);
+		return (elements_optional(elements, true));
+	}
 	if (parser_current_is(parser, OPEN_DOUBLE_QUOTE))
 	{
+		t_elements *elements = elements_new();
 		*wildcard_expantion = false;
 		*has_quotes = true;
-		builder = string_builder_new();
 		parser_consume(parser);
 		while (!parser_reached_end(parser) && !parser_current_is(parser, CLOSE_DOUBLE_QUOTE))
 		{
 			if (parser_current_is(parser, WORD))
-				string_builder_append_cstring(builder, parser_consume(parser)->lexeme);
+				elements_add(elements, string_create(parser_consume(parser)->lexeme, false), WORD_ELEMENT, false);
 			else if (parser_current_is(parser, DOLLAR))
 			{
 				dollar = parser_consume(parser);
 				if (vars_expantion)
-				{
-					char *name = parser_consume(parser)->lexeme;
-					if (string_equals(name, "?"))
-					{
-						char *num = llong_to_string(parser->env->exit_code);
-						string_builder_append_cstring(builder, num);
-						free(num);
-					}
-					else
-						string_builder_append_cstring(builder, env_get_var(parser->env, name, ""));
-				}
+					elements_add(elements, string_create(parser_consume(parser)->lexeme, false), VAR_ELEMENT, true);
 				else
-				{
-					string_builder_append_cstring(builder, dollar->lexeme);
-					string_builder_append_cstring(builder, parser_consume(parser)->lexeme);
-				}
+					elements_add(elements, string_create(string_join(dollar->lexeme, parser_consume(parser)->lexeme), true), WORD_ELEMENT, false);
 			}
 			else
 				error("Error: Illegal state in 'unit_expression'");
 		}
 		parser_expect(parser, CLOSE_DOUBLE_QUOTE, "\"");
-		result = string_builder_to_cstr(builder);
-		string_builder_free(&builder);
-		return (string_create(result, true));
+		return (elements_optional(elements, true));
 	}
 	if (parser_current_is(parser, OPEN_SINGLE_QUOTE))
 	{
 		*wildcard_expantion = false;
 		*has_quotes = true;
-		builder = string_builder_new();
+		t_elements *elements;
 		parser_consume(parser);
 		if (parser_current_is(parser, WORD))
-			string_builder_append_cstring(builder, parser_consume(parser)->lexeme);
+		{
+			elements = elements_new_cap(1);
+			elements_add(elements, string_create(parser_consume(parser)->lexeme, false), WORD_ELEMENT, false);
+		}
+		else
+			elements = elements_new_cap(0);
 		parser_expect(parser, CLOSE_SINGLE_QUOTE, "\'");
-		result = string_builder_to_cstr(builder);
-		string_builder_free(&builder);
-		return (string_create(result, true));
+		return (elements_optional(elements, true));
 	}
 	if (parser_current_is(parser, DOLLAR))
 	{
 		*wildcard_expantion = false;
 		dollar = parser_consume(parser);
+		t_elements *elements = elements_new_cap(1);
 		if (vars_expantion)
-		{
-			char *name = parser_consume(parser)->lexeme;
-			if (string_equals(name, "?"))
-				return (string_create(llong_to_string(parser->env->exit_code), true));
-			char *value = env_get_var(parser->env, name, "");
-			if (*value != '\0')
-			{
-				char **subs = string_split(value, " \t");
-				char **temp = subs;
-				char *ret = *temp++;
-				while (*temp)
-					tokens_add(parser->leftovers, *temp++, WORD);
-				free(subs);
-				return (string_create(ret, true));
-			}
-			return (string_create(value, false));
-		}
-		return (string_create(string_join(dollar->lexeme, parser_consume(parser)->lexeme), true));
+			elements_add(elements, string_create(parser_consume(parser)->lexeme, false), VAR_ELEMENT, true);
+		else
+			elements_add(elements, string_create(string_join(dollar->lexeme, parser_consume(parser)->lexeme), true), WORD_ELEMENT, false);
+		return (elements_optional(elements, true));
 	}
-	return (string_create(NULL, false));
+	return (elements_optional(NULL, false));
 }
 
-t_string	concatenation_expression(t_parser *parser, bool expand, bool *has_quotes)
+t_elements	*concatenation_expression(t_parser *parser, bool expand, bool *has_quotes)
 {
 	bool				wildcard_expantion;
-	t_string_builder	*builder;
-	char				*result;
-	t_string			temp;
+	t_elements			*elements;
+	t_optional_elements temp;
 
-	builder = string_builder_new();
+	elements = elements_new();
 	wildcard_expantion = true;
 	temp = unit_expression(parser, expand, &wildcard_expantion, has_quotes);
-	if (temp.value != NULL)
+	if (temp.elements != NULL)
 	{
-		(string_builder_append_cstring(builder, temp.value), string_free(&temp));
+		elements_fill(elements, &temp.elements);
 		while (!parser_reached_end(parser) && parser_current_is(parser, PLUS))
 		{
 			parser_consume(parser);
 			temp = unit_expression(parser, expand, &wildcard_expantion, has_quotes);
-			if (temp.value == NULL)
+			if (temp.elements == NULL)
 				break ;
-			string_builder_append_cstring(builder, temp.value);
-			string_free(&temp);
+			elements_fill(elements, &temp.elements);
 		}
 	}
-	result = string_builder_to_cstr(builder);
-	string_builder_free(&builder);
-	if (!wildcard_expantion)
-		return (string_create(result, true));
-	temp = apply_pattern(result, parser->env->working_dir.value);
-	if (temp.value != result)
-		free(result);
-	return (temp);
+	elements->expandable = wildcard_expantion;
+	return (elements);
 }
 
-t_optional_string	redirection_operand(t_parser *parser, bool expand, bool *has_quotes)
+t_optional_elements	redirection_operand(t_parser *parser, bool expand, bool *has_quotes)
 {
-	if (parser_current_is(parser, DOUBLE_GREATER_THAN)
+	if (parser_reached_end(parser)
+		|| parser_current_is(parser, DOUBLE_GREATER_THAN)
 		|| parser_current_is(parser, DOUBLE_AMPERSAND)
 		|| parser_current_is(parser, DOUBLE_LESS_THAN)
 		|| parser_current_is(parser, CLOSE_PARENT)
@@ -210,18 +172,22 @@ t_optional_string	redirection_operand(t_parser *parser, bool expand, bool *has_q
 		|| parser_current_is(parser, OPEN_PARENT)
 		|| parser_current_is(parser, LESS_THAN))
 	{
-		ft_printf(STDERR_FILENO, "Error: Unexpected '%s', expected a word\n", parser_consume(parser)->lexeme);
-		return (string_optional(string_create(NULL, false), false));
+		ft_printf(STDERR_FILENO, "Error: Unexpected '%s'\n", parser_consume(parser)->lexeme);
+		return (elements_optional(NULL, false));
 	}
-	return (string_optional(concatenation_expression(parser, expand, has_quotes), true));
+	return (elements_optional(concatenation_expression(parser, expand, has_quotes), true));
 }
 
-t_string	resolve_vars(t_environment *env, char *line)
+t_elements	*resolve_vars(char *line)
 {
 	if (string_index_of(line, "$") == -1)
-		return (string_create(line, false));
+	{
+		t_elements *elements = elements_new_cap(1);
+		elements_add(elements, string_create(string_duplicate(line), true), WORD_ELEMENT, false);
+		return (elements);
+	}
+	t_elements *elements = elements_new();
 	t_string_builder *builder = string_builder_new_cap(string_length(line));
-	char *result;
 	while (*line)
 	{
 		if (*line != '$' || (*line == '$' && !is_identifier_start(*(line + 1))))
@@ -229,33 +195,36 @@ t_string	resolve_vars(t_environment *env, char *line)
 			string_builder_append_char(builder, *line++);
 			continue ;
 		}
+		if (builder->size > 0)
+		{
+			elements_add(elements, string_create(string_builder_to_cstr(builder), true), WORD_ELEMENT, true);
+			string_builder_clear(builder);
+		}
 		line++;
 		size_t	index = 0;
-		while (line[index] && is_identifier_cont(line[index])) {
+		while (line[index] && is_identifier_cont(line[index]))
 			index++;
-		}
-		char *name = substring(line, 0, index);
-		string_builder_append_cstring(builder, env_get_var(env, name, ""));
-		free(name);
+		elements_add(elements, string_create(substring(line, 0, index), true), VAR_ELEMENT, true);
 		line += index;
 	}
-	result = string_builder_to_cstr(builder);
+	if (builder->size > 0)
+	{
+		elements_add(elements, string_create(string_builder_to_cstr(builder), true), WORD_ELEMENT, false);
+		string_builder_clear(builder);
+	}
 	string_builder_free(&builder);
-	return (string_create(result, true));
+	return (elements);
 }
 
-t_optional_string	read_from_stdin(t_environment *env, char *limiter, bool expand_vars)
+t_optional_elements	read_from_stdin(char *limiter, bool expand_vars)
 {
-	t_string_builder	*builder;
-	char				*result;
-	char				*line;
-	bool				success;
+	char	*line;
+	bool	success;
 
-	builder = string_builder_new();
 	success = true;
-	result = NULL;
 	line = NULL;
 	signal(SIGINT, sigint_close_handler);
+	t_elements *elements = elements_new();
 	while (1)
 	{
 		g_globals.in_fd = -1;
@@ -275,22 +244,19 @@ t_optional_string	read_from_stdin(t_environment *env, char *limiter, bool expand
 			break ;
 		if (expand_vars)
 		{
-			t_string resolved_line = resolve_vars(env, line);
-			string_builder_append_cstring(builder, resolved_line.value);
-			string_free(&resolved_line);
+			char *str = string_join(line, "\n");
+			t_elements *src = resolve_vars(str);
+			elements_fill(elements, &src);
+			free(str);
 		}
 		else
-			string_builder_append_cstring(builder, line);
-		string_builder_append_char(builder, '\n');
+			elements_add(elements, string_create(string_join(line, "\n"), true), WORD_ELEMENT, false);
 		free(line);
 		line = NULL;
 	}
 	signal(SIGINT, sigint_handler);
 	free(line);
-	if (success)
-		result = string_builder_to_cstr(builder);
-	string_builder_free(&builder);
-	return (string_optional(string_create(result, success), success));
+	return (elements_optional(elements, success));
 }
 
 t_optional_node	conjuction_expression(t_parser *parser);
@@ -319,47 +285,57 @@ t_optional_node	primary_expression(t_parser *parser)
 		if (parser_current_is(parser, DOUBLE_GREATER_THAN))
 		{
 			parser_consume(parser);
-			t_optional_string	extra = redirection_operand(parser, true, &has_quotes);
+			t_optional_elements	extra = redirection_operand(parser, true, &has_quotes);
 			if (!extra.present) return (node_optional(command, false));
-			command_add_redirection(command, APPEND, extra.string);
+			command_add_redirection(command, APPEND, extra.elements);
 		}
 		else if (parser_current_is(parser, DOUBLE_LESS_THAN))
 		{
 			parser_consume(parser);
-			t_optional_string	extra = redirection_operand(parser, false, &has_quotes);
+			t_optional_elements	extra = redirection_operand(parser, false, &has_quotes);
 			if (!extra.present) return (node_optional(command, false));
-			t_optional_string	content = read_from_stdin(parser->env, extra.string.value, !has_quotes);
-			string_free(&extra.string);
+			
+			bool 		expandable = extra.elements->expandable;
+			t_string	limiter = elements_resolve(extra.elements, parser->env);
+			elements_free(&extra.elements);
+			
+			t_optional_elements	content = read_from_stdin(limiter.value, !has_quotes);
+			content.elements->expandable = expandable;
+			command_add_redirection(command, HEREDOC, content.elements);
+			string_free(&limiter);
+			
 			if (!content.present) return (node_optional(command, false));
-			command_add_redirection(command, HEREDOC, content.string);
 		}
 		else if (parser_current_is(parser, GREATER_THAN))
 		{
 			parser_consume(parser);
-			t_optional_string	extra = redirection_operand(parser, true, &has_quotes);
+			t_optional_elements	extra = redirection_operand(parser, true, &has_quotes);
 			if (!extra.present) return (node_optional(command, false));
-			command_add_redirection(command, OUTPUT, extra.string);
+			command_add_redirection(command, OUTPUT, extra.elements);
 		}
 		else if (parser_current_is(parser, LESS_THAN))
 		{
 			parser_consume(parser);
-			t_optional_string	extra = redirection_operand(parser, true, &has_quotes);
+			t_optional_elements	extra = redirection_operand(parser, true, &has_quotes);
 			if (!extra.present) return (node_optional(command, false));
-			command_add_redirection(command, INPUT, extra.string);
+			command_add_redirection(command, INPUT, extra.elements);
 		}
 		else if (parser_current_is(parser, WORD)
 				|| parser_current_is(parser, OPEN_DOUBLE_QUOTE)
 				|| parser_current_is(parser, OPEN_SINGLE_QUOTE)
-				|| parser_current_is(parser, DOLLAR)
-				|| parser->leftovers->size - parser->leftovers_head > 0)
+				|| parser_current_is(parser, DOLLAR))
 			command_add_arg(command, concatenation_expression(parser, true, &has_quotes));
 		else
 			break ;
 	}
+	bool present = true;
 	if (((t_command_node *) command)->redirections_size == 0
 		&& ((t_command_node *) command)->args_size == 0)
+	{
 		ft_printf(STDERR_FILENO, "Error: Unexpected '%s'\n", parser_consume(parser)->lexeme);
-	return (node_optional(command, true));
+		present = false;
+	}
+	return (node_optional(command, present));
 }
 
 t_optional_node	pipeline_expression(t_parser *parser)

@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 10:58:25 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/15 11:16:42 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/18 13:34:16 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,6 @@ typedef struct s_parser
 {
 	t_environment	*env;
 	t_tokens		*tokens;
-	t_tokens		*leftovers;
-	size_t			leftovers_head;
 	size_t			index;
 }	t_parser;
 

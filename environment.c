@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/15 11:23:01 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/15 18:50:48 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/17 21:02:26 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 #include "environment.h"
 #include "utils.h"
 
-#define SHELL_LEVEL_WARING "minishell: warning: shell level (1000000000)\
+#define SHELL_LEVEL_WARING "minishell: warning: shell level (%z)\
  too high, resetting to 1\n"
 
 void	initilize_defaults(t_environment *env)
@@ -31,22 +31,22 @@ void	initilize_defaults(t_environment *env)
 
 	symbol.name = string_create("PWD", false);
 	symbol.value = string_create(env->working_dir.value, false);
-	env_put_var(env, symbol);
+	env_put_var(env, symbol, true);
 	symbol.name = string_create("SHLVL", false);
 	shlvl = string_to_llong(env_get_var(env, "SHLVL", ""), &error);
 	if (error || shlvl > 1000000000)
 	{
 		if (shlvl > 1000000000)
-			ft_printf(STDOUT_FILENO, SHELL_LEVEL_WARING);
+			ft_printf(STDOUT_FILENO, SHELL_LEVEL_WARING, shlvl + 1);
 		shlvl = 1;
 	}
 	else
 		shlvl += 1;
 	symbol.value = string_create(llong_to_string(shlvl), true);
-	env_put_var(env, symbol);
+	env_put_var(env, symbol, true);
 	symbol.name = string_create("_", false);
 	symbol.value = string_create("/usr/bin/env", false);
-	env_put_var(env, symbol);
+	env_put_var(env, symbol, true);
 }
 
 void	fill_environment(t_environment *environment, char **env)
@@ -59,7 +59,7 @@ void	fill_environment(t_environment *environment, char **env)
 		splitted = string_split(*env++, "=");
 		symbol.name = string_create(splitted[0], splitted[0] != NULL);
 		symbol.value = string_create(splitted[1], splitted[1] != NULL);
-		env_put_var(environment, symbol);
+		env_put_var(environment, symbol, true);
 		free(splitted);
 	}
 }
@@ -158,12 +158,12 @@ void	env_remove_var(t_environment *env, char *name)
 	env->symbols_size--;
 }
 
-void	env_put_var(t_environment *env, t_symbol symbol)
+void	env_put_var(t_environment *env, t_symbol symbol, bool force)
 {
 	size_t	index;
 
 	index = -1;
-	if (string_equals(symbol.name.value, "_"))
+	if (!force && string_equals(symbol.name.value, "_"))
 	{
 		string_free(&symbol.name);
 		string_free(&symbol.value);

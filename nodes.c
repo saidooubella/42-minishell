@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 13:39:15 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/15 11:16:20 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/18 17:53:30 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,20 +91,20 @@ t_node	*command_node_new(void)
 	return ((t_node *) node);
 }
 
-void	command_add_arg(t_node	*_node, t_string arg)
+void	command_add_arg(t_node	*_node, t_elements *arg)
 {
 	t_command_node	*node;
-	t_string		*new_args;
+	t_elements 		**new_args;
 	size_t			new_capacity;
 
 	node = (t_command_node *) _node;
 	if (node->args_size + 1 >= node->args_cap)
 	{
 		new_capacity = (node->args_size + 1) << 1;
-		new_args = malloc(sizeof(t_string) * new_capacity);
+		new_args = malloc(sizeof(t_elements *) * new_capacity);
 		if (new_args == NULL)
 			memory_error();
-		bytes_copy(new_args, node->args, node->args_size * sizeof(t_string));
+		bytes_copy(new_args, node->args, node->args_size * sizeof(t_elements *));
 		free(node->args);
 		node->args_cap = new_capacity;
 		node->args = new_args;
@@ -114,7 +114,7 @@ void	command_add_arg(t_node	*_node, t_string arg)
 }
 
 void	command_add_redirection(
-	t_node	*_node, t_redirection_type type, t_string extra)
+	t_node	*_node, t_redirection_type type, t_elements *extra)
 {
 	t_command_node	*node;
 	t_redirection	*new_redirects;
@@ -132,7 +132,7 @@ void	command_add_redirection(
 		node->redirections_cap = new_capacity;
 		node->redirections = new_redirects;
 	}
-	node->redirections[node->redirections_size].extra = extra;
+	node->redirections[node->redirections_size].elements = extra;
 	node->redirections[node->redirections_size].type = type;
 	node->redirections_size++;
 }
@@ -143,10 +143,10 @@ void	command_node_free(t_command_node *node)
 
 	index = -1;
 	while (++index < node->redirections_size)
-		string_free(&node->redirections[index].extra);
+		elements_free(&node->redirections[index].elements);
 	index = -1;
 	while (++index < node->args_size)
-		string_free(&node->args[index]);
+		elements_free(&node->args[index]);
 	free(node->redirections);
 	free(node->args);
 	free(node);

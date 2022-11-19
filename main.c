@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 11:01:21 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/16 13:02:59 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/18 16:12:29 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,8 +58,7 @@ void	sigint_close_handler(int signum)
 void	register_siganals(void)
 {
 	if (signal(SIGINT, sigint_handler) == SIG_ERR ||
-		signal(SIGQUIT, SIG_IGN) == SIG_ERR ||
-		signal(SIGTSTP, SIG_IGN) == SIG_ERR)
+		signal(SIGQUIT, SIG_IGN) == SIG_ERR)
 		error("Error: Failed to register a signal");
 }
 
