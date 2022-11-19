@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 10:20:00 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/19 09:58:51 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/19 20:12:14 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <signal.h>
+#include <errno.h>
 
 #include "string_builder.h"
 #include "exec_resolver.h"
@@ -41,17 +42,58 @@ t_result	result_create(t_result_type type, int extra)
 	return (result);
 }
 
-char	**unwrap_args(t_environment *env, t_elements **args, size_t size)
+char	**unwrap_args(t_environment *env, t_command_node *node, size_t *actual_size, bool unwrap_all)
 {
+	size_t	args_index;
 	size_t	index;
+	char	**splitted;
 	char	**mapped;
-	
-	mapped = malloc(sizeof(char *) * (size + 1));
+	char	**temp;
+
+	args_index = -1;
+	if (unwrap_all)
+	{
+		*actual_size = 0;
+		while (++args_index < node->args_size)
+		{
+			t_string resolved = elements_resolve(node->args[args_index], env);
+			if (string_length(resolved.value) != 0)
+				*actual_size += calc_words_count(resolved.value, " \t\f\n\r\v");
+			else
+				*actual_size += 1;
+			string_free(&resolved);
+		}
+	}
+	else
+		*actual_size = node->args_size;
+	mapped = malloc(sizeof(char *) * (*actual_size + 1));
 	if (mapped == NULL)
 		memory_error();
-	index = -1;
-	while (++index < size)
-		mapped[index] = elements_resolve(args[index], env).value;
+	args_index = -1;
+	index = 0;
+	while (++args_index < node->args_size)
+	{
+		t_string resolved = elements_resolve(node->args[args_index], env);
+		if (unwrap_all)
+		{
+			if (string_length(resolved.value) == 0)
+			{
+				string_free(&resolved);
+				mapped[index++] = "";
+			}
+			else
+			{
+				splitted = string_split(resolved.value, " \t\f\n\r\v");
+				string_free(&resolved);
+				temp = splitted;
+				while (*temp)
+					mapped[index++] = *temp++;
+				free(splitted);
+			}
+		}
+		else
+			mapped[index++] = resolved.value;
+	}
 	mapped[index] = NULL;
 	return (mapped);
 }
@@ -168,12 +210,15 @@ t_result	visit_command_node(
 	bool should_wait
 )
 {
+	size_t	size;
+	
 	if (node->args_size > 0)
 	{
 		t_string path = elements_resolve(node->args[0], env);
 		t_builtin *builtin = builtin_lookup(env->builtins, path.value);
 		string_free(&path);
 		if (builtin != NULL) {
+			char **args = unwrap_args(env, node, &size, !string_equals(builtin->name, "export"));
 			int stdin_copy = duplicate_fd(STDIN_FILENO);
 			int stdout_copy = duplicate_fd(STDOUT_FILENO);
 			in = duplicate_fd(in);
@@ -181,9 +226,13 @@ t_result	visit_command_node(
 			resolve_redirections(env, node, &in, &out, true);
 			redirect_fd(in, STDIN_FILENO);
 			redirect_fd(out, STDOUT_FILENO);
-			t_result result = result_create(EXIT_STATUS, builtin->block(env, node->args_size, node->args));
+			t_result result = result_create(EXIT_STATUS, builtin->block(env, size, args));
 			redirect_fd(stdin_copy, STDIN_FILENO);
 			redirect_fd(stdout_copy, STDOUT_FILENO);
+			char **tmp = args;
+			while (*tmp)
+				free(*tmp++);
+			free(args);
 			return result;
 		}
 	}
@@ -201,7 +250,7 @@ t_result	visit_command_node(
 
 		if (node->args_size > 0)
 		{
-			char **args = unwrap_args(env, node->args, node->args_size);
+			char **args = unwrap_args(env, node, &size, true);
 			char **envp = unwrap_env(env->symbols, env->symbols_size);
 			char *executable_path = resolve_executable(env, args[0]);
 			if (executable_path != NULL)

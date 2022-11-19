@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:41:23 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/15 18:47:02 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/19 14:11:55 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,15 +131,15 @@ int	are_equals(char *s1, char *s2)
 	return (0);
 }
 
-static int	contains(char *sequence, char target)
+static bool	contains(char *sequence, char target)
 {
 	while (*sequence)
 		if (*sequence++ == target)
-			return (1);
-	return (0);
+			return (true);
+	return (false);
 }
 
-static size_t	calc_words_count(char *string, char *seps)
+size_t	calc_words_count(char *string, char *seps)
 {
 	size_t	count;
 

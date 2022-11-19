@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:42:13 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/15 17:55:04 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/19 13:29:04 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 # define _LONG_MAX 9223372036854775807ull
 # define _LONG_MIN 9223372036854775808ull
 
+size_t		calc_words_count(char *string, char *seps);
 bool		string_starts_with(char *str, char *to_find, size_t to_find_len);
 int			string_compare(const char *s1, const char *s2, size_t n);
 void		*bytes_move(void *dst, const void *src, size_t len);
