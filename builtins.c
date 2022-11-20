@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/15 10:37:37 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/19 14:23:45 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/20 16:47:55 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include "path_simplifier.h"
 #include "string_utils.h"
 #include "lexer_utils.h"
 #include "interpreter.h"
@@ -102,6 +103,7 @@ int	echo_builtin(t_environment *env, size_t argc, char **argv)
 
 int	cd_builtin(t_environment *env, size_t argc, char **argv)
 {
+	char 		*simplified_path;
 	t_string	target;
 
 	if (argc < 2)
@@ -136,22 +138,24 @@ int	cd_builtin(t_environment *env, size_t argc, char **argv)
 				char *y = string_join(x, arg);
 				target = (free(x), string_create(y, true));
 			}
-			ft_printf(STDOUT_FILENO, ">> %s\n", target.value);
-			if (access(target.value, F_OK) != 0)
-				ft_printf(STDERR_FILENO, "cd: no such file or directory: %s\n", arg);
 		}
 	}
 	t_symbol	symbol;
 	symbol.name = string_create("OLDPWD", false);
 	symbol.value = env->working_dir;
 	env_put_var(env, symbol, true);
-	if (access(target.value, F_OK) == 0)
+	simplified_path = simplify_path(target.value);
+	if (access(simplified_path, F_OK) == 0)
 	{
-		chdir(target.value);
+		chdir(simplified_path);
 		string_free(&target);
 		target = string_create(getcwd(NULL, 0), true);
-		ft_printf(STDOUT_FILENO, ">> %s\n", target.value);
 	}
+	else
+	{
+		ft_printf(STDERR_FILENO, "cd: no such file or directory: %s\n", argv[1]);
+	}
+	free(simplified_path);
 	if (target.value == NULL)
 	{
 		ft_printf(STDERR_FILENO, "cd: can't retreive the working directory\n");

@@ -9,11 +9,11 @@ SRCS=builtins.c environment.c exec_resolver.c ft_char_print_utils.c ft_number_pr
 ft_printf.c interpreter.c lexer1.c lexer2.c lexer_cases1.c lexer_cases2.c lexer_cases3.c \
 lexer_cases4.c lexer_cases5.c lexer_cases6.c lexer_utils.c main.c nodes.c parser.c string.c \
 string_builder1.c string_builder2.c string_utils.c tokens.c utils.c wildcard_matcher.c \
-element.c
+element.c path_simplifier.c
 
 HEADERS=builtins.h environment.h exec_resolver.h ft_printf.h interpreter.h lexer.h \
 lexer_cases.h lexer_utils.h main.h nodes.h parser.h string.h string_builder.h string_utils.h \
-tokens.h utils.h wildcard_matcher.h element.h
+tokens.h utils.h wildcard_matcher.h element.h path_simplifier.h
 
 OBJS=$(SRCS:.c=.o)
 
