@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 18:16:17 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 18:24:30 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 20:56:34 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@ t_elements	*concatenation_expression(
 	if (temp.elements != NULL)
 	{
 		elements_fill(elements, &temp.elements);
-		while (!parser_reached_end(parser) && parser_current_is(parser, PLUS))
+		while (parser_current_is(parser, PLUS))
 		{
 			parser_consume(parser);
 			temp = unit_expression(parser, expand,
@@ -120,6 +120,5 @@ char	*create_var(t_elements *elements, char *line, t_string_builder *builder)
 	elements_add(elements,
 		string_create(substring(line, 0, index), true),
 		VAR_ELEMENT, true);
-	line += index;
 	return (line + index);
 }

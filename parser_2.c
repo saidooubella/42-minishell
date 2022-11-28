@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 18:13:30 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 18:24:11 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 20:58:08 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ bool	parser_reached_end(t_parser *parser)
 
 bool	parser_current_is(t_parser *parser, t_token_type type)
 {
-	return (!parser_reached_end(parser)
+	return (parser->index < parser->tokens->size
 		&& parser->tokens->tokens[parser->index].type == type);
 }
 

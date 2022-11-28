@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:17:55 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 17:47:41 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 17:58:54 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,9 @@ static int	export_print_env(t_environment *env)
 	while (++index < env->symbols_size)
 	{
 		symbol = env->symbols[index];
-		ft_printf(STDOUT_FILENO, "declare -x %s=", symbol.name.value);
+		ft_printf(STDOUT_FILENO, "declare -x %s", symbol.name.value);
+		if (symbol.has_value)
+			ft_printf(STDOUT_FILENO, "=");
 		if (symbol.value.value != NULL)
 			ft_printf(STDOUT_FILENO, "%s", symbol.value.value);
 		ft_printf(STDOUT_FILENO, "\n");
@@ -72,11 +74,12 @@ static void	export_handle_arg(t_environment *env, char *arg, size_t index)
 		ft_printf(STDERR_FILENO, "export: `%s': not a valid identifier\n", arg);
 		return ;
 	}
-	env_put_var(env, symbol, false);
+	env_put_var(env, symbol, false, true);
 }
 
 int	export_builtin(t_environment *env, size_t argc, char **argv)
 {
+	t_symbol	symbol;
 	size_t		index;
 	size_t		jndex;
 	char		*arg;
@@ -89,14 +92,16 @@ int	export_builtin(t_environment *env, size_t argc, char **argv)
 		arg = argv[index];
 		jndex = export_skip_name(arg);
 		if (arg[jndex] == '\0')
-			continue ;
-		if (jndex == 0)
 		{
+			symbol.name = string_create(string_duplicate(arg), true);
+			symbol.value = string_create(NULL, false);
+			env_put_var(env, symbol, false, false);
+		}
+		else if (jndex == 0)
 			ft_printf(STDERR_FILENO,
 				"export: '%s': not a valid identifier\n", arg);
-			continue ;
-		}
-		export_handle_arg(env, arg, jndex);
+		else
+			export_handle_arg(env, arg, jndex);
 	}
 	return (0);
 }

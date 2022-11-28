@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/15 11:23:01 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/28 09:59:39 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 17:53:29 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ void	initilize_defaults(t_environment *env)
 
 	symbol.name = string_create("PWD", false);
 	symbol.value = string_create(env->working_dir.value, false);
-	env_put_var(env, symbol, true);
+	env_put_var(env, symbol, true, true);
 	symbol.name = string_create("SHLVL", false);
 	shlvl = string_to_llong(env_get_var(env, "SHLVL", ""), false, &error);
 	if (error || shlvl > 1000000000)
@@ -44,10 +44,10 @@ void	initilize_defaults(t_environment *env)
 	else
 		shlvl += 1;
 	symbol.value = string_create(llong_to_string(shlvl), true);
-	env_put_var(env, symbol, true);
+	env_put_var(env, symbol, true, true);
 	symbol.name = string_create("_", false);
 	symbol.value = string_create("/usr/bin/env", false);
-	env_put_var(env, symbol, true);
+	env_put_var(env, symbol, true, true);
 }
 
 void	fill_environment(t_environment *environment, char **env)
@@ -61,7 +61,7 @@ void	fill_environment(t_environment *environment, char **env)
 		symbol.name = string_create(splitted[0], splitted[0] != NULL);
 		symbol.value = string_create(splitted[1], splitted[1] != NULL);
 		if (!string_equals(symbol.name.value, "OLDPWD"))
-			env_put_var(environment, symbol, true);
+			env_put_var(environment, symbol, true, true);
 		else
 		{
 			string_free(&symbol.name);

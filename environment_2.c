@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:27:58 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 17:45:12 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 18:12:57 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 
 #include "string_utils.h"
 #include "environment.h"
+#include "ft_printf.h"
 
 char	*env_get_var(t_environment *env, char *name, char *fallback)
 {
@@ -55,11 +56,13 @@ void	env_remove_var(t_environment *env, char *name)
 	env->symbols_size--;
 }
 
-void	env_put_var(t_environment *env, t_symbol symbol, bool force)
+void	env_put_var(
+	t_environment *env, t_symbol symbol, bool force, bool has_value)
 {
 	size_t	index;
 
 	index = -1;
+	symbol.has_value = has_value;
 	if (!force && string_equals(symbol.name.value, "_"))
 	{
 		string_free(&symbol.name);
@@ -74,6 +77,7 @@ void	env_put_var(t_environment *env, t_symbol symbol, bool force)
 			string_free(&env->symbols[index].value);
 			env->symbols[index].name = symbol.name;
 			env->symbols[index].value = symbol.value;
+			env->symbols[index].has_value = symbol.has_value;
 			return ;
 		}
 	}

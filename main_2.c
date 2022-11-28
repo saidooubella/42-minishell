@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/26 16:10:46 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/28 10:07:38 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 18:56:09 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,8 @@ void	exec_command(t_lexer_result *result)
 
 	if (!result->success || result->tokens->size <= 1)
 		return ;
-	if (!isatty(STDIN_FILENO))
-		ft_printf(STDOUT_FILENO, "\033[1A\033[K");
+	// if (!isatty(STDIN_FILENO))
+	// 	ft_printf(STDOUT_FILENO, "\033[1A\033[K");
 	parser = parser_new(result->tokens, g_globals.env);
 	root = parse(parser);
 	if (root.present)

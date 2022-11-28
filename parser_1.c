@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/15 10:38:20 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/28 10:16:16 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 19:42:48 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,11 +74,15 @@ t_optional_node	expression(t_parser *parser)
 t_optional_node	parse(t_parser *parser)
 {
 	t_optional_node	root;
+	bool			present;
 
 	root = expression(parser);
+	present = root.present;
 	if (root.present && parser->index < parser->tokens->size - 1)
+	{
 		ft_printf(STDERR_FILENO,
 			"Error: Unexpected '%s'\n", parser_consume(parser)->lexeme);
-	return (node_optional(root.node,
-			parser->index >= parser->tokens->size - 1));
+		present = false;
+	}
+	return (node_optional(root.node, present));
 }

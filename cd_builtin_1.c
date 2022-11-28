@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/26 13:05:40 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/26 14:21:04 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 17:53:18 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ void	update_internals(t_environment *env, char *target, bool chcwd)
 
 	symbol.name = string_create("OLDPWD", false);
 	symbol.value = env->working_dir;
-	env_put_var(env, symbol, true);
+	env_put_var(env, symbol, true, true);
 	if (chcwd)
 	{
 		if (chdir(target) == -1)
@@ -46,7 +46,7 @@ void	update_internals(t_environment *env, char *target, bool chcwd)
 	}
 	symbol.name = string_create("PWD", false);
 	symbol.value = string_create(env->working_dir.value, false);
-	env_put_var(env, symbol, true);
+	env_put_var(env, symbol, true, true);
 }
 
 char	*get_env_var(t_environment *env, char *name)

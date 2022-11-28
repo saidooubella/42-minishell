@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 18:32:35 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 18:37:19 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 20:49:41 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ char	*string_duplicate(char *s1)
 	temp = result;
 	while (*s1)
 		*temp++ = *s1++;
-	*temp = 0;
+	*temp = '\0';
 	return (result);
 }
 

@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 18:18:15 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/26 15:55:56 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 18:56:27 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 #include "parser.h"
 #include "main.h"
 
-static t_elements	*resolve_vars(char *line)
+static t_elements	*resolve_vars(char *original_line, char *line)
 {
 	t_string_builder	*builder;
 	t_elements			*elements;
@@ -39,15 +39,13 @@ static t_elements	*resolve_vars(char *line)
 	while (*line)
 	{
 		if (*line != '$' || (*line == '$' && !is_identifier_start(line[1])))
-		{
 			string_builder_append_char(builder, *line++);
-			continue ;
-		}
-		line = create_var(elements, line + 1, builder);
+		else
+			line = create_var(elements, line + 1, builder);
 	}
 	create_var(elements, line + 1, builder);
 	string_builder_free(&builder);
-	free(line);
+	free(original_line);
 	return (elements);
 }
 
@@ -85,11 +83,13 @@ static char	*stdin_read(char *limiter, bool *success)
 
 static void	process_line(t_elements *elements, char *line, bool expand_vars)
 {
+	char		*line_with_nl;
 	t_elements	*temp;
 
 	if (expand_vars)
 	{
-		temp = resolve_vars(string_join(line, "\n"));
+		line_with_nl = string_join(line, "\n");
+		temp = resolve_vars(line_with_nl, line_with_nl);
 		elements_fill(elements, &temp);
 	}
 	else
@@ -114,8 +114,8 @@ t_optional_elements	read_from_stdin(char *limiter, bool expand_vars)
 		line = stdin_read(limiter, &success);
 		if (line == NULL)
 			break ;
-		if (!isatty(STDIN_FILENO))
-			ft_printf(STDOUT_FILENO, "\033[1A\033[K");
+		// if (!isatty(STDIN_FILENO))
+		// 	ft_printf(STDOUT_FILENO, "\033[1A\033[K");
 		process_line(elements, line, expand_vars);
 	}
 	signal(SIGINT, sigint_default_handler);

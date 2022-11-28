@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:35:01 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/27 11:33:45 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 20:23:13 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,8 +52,7 @@ static t_result	exec_builtin(
 	size_t		size;
 	t_result	result;
 
-	args = unwrap_args(env, node, &size,
-			!string_equals(builtin->name, "export"));
+	args = unwrap_args(env, node, &size, false);
 	stdin_copy = duplicate_fd(STDIN_FILENO);
 	stdout_copy = duplicate_fd(STDOUT_FILENO);
 	extra.in = duplicate_fd(extra.in);
@@ -75,9 +74,9 @@ static void	exec_program(
 	char	*executable_path;
 	size_t	size;
 
-	resolve_redirections(env, node, &extra.in, &extra.out);
 	redirect_fd(extra.out, STDOUT_FILENO);
 	redirect_fd(extra.in, STDIN_FILENO);
+	resolve_redirections(env, node, &extra.in, &extra.out);
 	if (node->args_size > 0)
 	{
 		args = unwrap_args(env, node, &size, true);
