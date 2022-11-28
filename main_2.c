@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/26 16:10:46 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/26 16:10:46 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 10:07:38 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,13 +75,13 @@ void	sigint_heredoc_handler(int signum)
 	close(STDIN_FILENO);
 }
 
-void	initialization(char **env)
+void	initialization(char **env, bool is_bonus)
 {
 	if (signal(SIGINT, sigint_default_handler) == SIG_ERR)
 		error("Error: Failed to register a signal");
 	if (signal(SIGQUIT, SIG_IGN) == SIG_ERR)
 		error("Error: Failed to register a signal");
 	g_globals.handle_signals = true;
-	g_globals.env = env_new(env);
+	g_globals.env = env_new(env, is_bonus);
 	rl_catch_signals = 0;
 }

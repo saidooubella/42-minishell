@@ -2,10 +2,11 @@
 IFLAG=-I ~/.brew/Cellar/readline/8.2.1/include
 LFLAG=-L ~/.brew/Cellar/readline/8.2.1/lib
 FLAGS=-Wall -Wextra -Werror
+BONUS_NAME=minishell_bonus
 NAME=minishell
 CC=cc
 
-SRCS=builtins.c cd_builtin_1.c cd_builtin_2.c echo_builtin.c element_1.c \
+COMMON=builtins.c cd_builtin_1.c cd_builtin_2.c echo_builtin.c element_1.c \
 element_2.c env_builtin.c environment_1.c environment_2.c exec_resolver.c \
 exit_builtin.c export_builtin.c ft_char_print_utils.c ft_number_print_utils.c \
 ft_printf.c interpreter_1.c interpreter_2.c interpreter_3.c interpreter_4.c \
@@ -22,21 +23,32 @@ interpreter.h lexer.h lexer_cases.h lexer_utils.h main.h nodes.h parser.h \
 path_simplifier.h string.h string_builder.h string_utils.h tokens.h utils.h \
 wildcard_matcher.h
 
-OBJS=$(SRCS:.c=.o)
+MAN_SRCS=$(COMMON) minishell.c
+
+BONUS_SRCS=$(COMMON) minishell_bonus.c
+
+MAN_OBJS=$(MAN_SRCS:.c=.o)
+
+BONUS_OBJS=$(BONUS_SRCS:.c=.o)
 
 all: $(NAME)
 
-$(NAME): $(OBJS)
+$(NAME): $(MAN_OBJS)
+	@ $(CC) $(FLAGS) $(LFLAG) -lreadline $^ -o $@
+
+bonus: $(BONUS_NAME)
+
+$(BONUS_NAME): $(BONUS_OBJS)
 	@ $(CC) $(FLAGS) $(LFLAG) -lreadline $^ -o $@
 
 %.o: %.c $(HEADERS)
 	@ $(CC) $(FLAGS) $(IFLAG) -c $< -o $@
 
 clean:
-	@ rm -rf $(OBJS)
+	@ rm -rf $(MAN_OBJS) $(BONUS_OBJS)
 
 fclean: clean
-	@ rm -rf $(NAME)
+	@ rm -rf $(NAME) $(BONUS_NAME)
 
 re: fclean all
 
@@ -45,4 +57,4 @@ check: all fclean
 run: all clean
 	@ ./minishell
 
-.PHONY: all clean fclean re install-readline check run
+.PHONY: all bonus clean fclean re check run

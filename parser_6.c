@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 18:20:38 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 18:20:39 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 09:57:50 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,18 +15,18 @@
 t_optional_node	parent_expr(t_parser *parser)
 {
 	t_token				*left_parent;
-	t_optional_node		expression;
+	t_optional_node		expr;
 	t_optional_token	right_parent;
 
 	left_parent = parser_consume(parser);
-	expression = conjuction_expression(parser);
-	if (!expression.present)
-		return (expression);
+	expr = expression(parser);
+	if (!expr.present)
+		return (expr);
 	right_parent = parser_expect(parser, CLOSE_PARENT, ")");
 	if (!right_parent.present)
-		return (node_optional(expression.node, false));
+		return (node_optional(expr.node, false));
 	return (node_optional(parent_node_new(left_parent,
-				expression.node, right_parent.token), true));
+				expr.node, right_parent.token), true));
 }
 
 bool	redirect_out_append_expr(t_parser *parser, t_node *command)

@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:26:10 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/26 14:55:55 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 09:55:04 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,21 @@
 #include "element.h"
 #include "string.h"
 #include "utils.h"
+
+t_elements	*elements_new_cap(size_t capacity)
+{
+	t_elements	*elements;
+
+	elements = malloc(sizeof(t_elements));
+	if (elements == NULL)
+		memory_error();
+	elements->elements = malloc(sizeof(t_element) * capacity);
+	if (elements->elements == NULL)
+		memory_error();
+	elements->capacity = capacity;
+	elements->size = 0;
+	return (elements);
+}
 
 void	elements_fill(t_elements *dst, t_elements **src)
 {

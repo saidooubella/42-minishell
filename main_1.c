@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 11:01:21 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/26 16:08:36 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 10:10:09 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,15 +32,13 @@ t_globals	g_globals;
 
 // void f(void) { system("leaks minishell"); } atexit(f);
 
-int	main(int ac, char **av, char **env)
+int	entry_point(char **env, bool is_bonus)
 {
 	t_lexer_result	result;
 	t_lexer			*lexer;
 	char			*line;
 
-	(void) ac;
-	(void) av;
-	initialization(env);
+	initialization(env, is_bonus);
 	while (true)
 	{
 		line = read_command_line();

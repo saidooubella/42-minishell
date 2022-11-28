@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/15 10:38:20 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 18:26:01 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 10:16:16 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ static t_optional_node	pipeline_expression(t_parser *parser)
 	return (node_optional(left.node, true));
 }
 
-t_optional_node	conjuction_expression(t_parser *parser)
+static t_optional_node	conjuction_expression(t_parser *parser)
 {
 	t_token			*operator;
 	t_optional_node	right;
@@ -64,11 +64,18 @@ t_optional_node	conjuction_expression(t_parser *parser)
 	return (node_optional(left.node, true));
 }
 
+t_optional_node	expression(t_parser *parser)
+{
+	if (parser->env->is_bonus)
+		return (conjuction_expression(parser));
+	return (pipeline_expression(parser));
+}
+
 t_optional_node	parse(t_parser *parser)
 {
 	t_optional_node	root;
 
-	root = conjuction_expression(parser);
+	root = expression(parser);
 	if (root.present && parser->index < parser->tokens->size - 1)
 		ft_printf(STDERR_FILENO,
 			"Error: Unexpected '%s'\n", parser_consume(parser)->lexeme);

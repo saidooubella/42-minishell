@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   environment.c                                      :+:      :+:    :+:   */
+/*   environment_1.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/15 11:23:01 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 17:27:24 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 09:59:39 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ void	fill_environment(t_environment *environment, char **env)
 	}
 }
 
-t_environment	*env_new(char **env)
+t_environment	*env_new(char **env, bool is_bonus)
 {
 	t_environment	*environment;
 
@@ -82,6 +82,7 @@ t_environment	*env_new(char **env)
 	environment->exit_code = 0;
 	environment->symbols_size = 0;
 	environment->symbols_cap = 0;
+	environment->is_bonus = is_bonus;
 	environment->working_dir = string_create(getcwd(NULL, 0), true);
 	environment->builtins = initilize_builtins();
 	if (environment->working_dir.value == NULL)

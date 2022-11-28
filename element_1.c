@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 14:35:12 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/26 16:11:02 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 10:05:26 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,21 +18,6 @@
 #include "string_utils.h"
 #include "wildcard_matcher.h"
 #include "utils.h"
-
-t_elements	*elements_new_cap(size_t capacity)
-{
-	t_elements	*elements;
-
-	elements = malloc(sizeof(t_elements));
-	if (elements == NULL)
-		memory_error();
-	elements->elements = malloc(sizeof(t_element) * capacity);
-	if (elements->elements == NULL)
-		memory_error();
-	elements->capacity = capacity;
-	elements->size = 0;
-	return (elements);
-}
 
 t_elements	*elements_new(void)
 {
@@ -55,11 +40,32 @@ void	handle_variable(
 			env_get_var(env, var->value.value, ""));
 }
 
+t_string	elements_resolve_epilogue(
+	t_elements *elements, t_environment *env, t_string_builder *builder)
+{
+	t_string	expanded;
+	char		*result;
+
+	result = string_builder_to_cstr(builder);
+	string_builder_free(&builder);
+	if (!elements->expandable)
+		return (string_create(result, true));
+	if (env->is_bonus)
+	{
+		expanded = apply_pattern(result, env->working_dir.value);
+		if (expanded.value != result)
+			free(result);
+	}
+	else
+	{
+		expanded = string_create(result, true);
+	}
+	return (expanded);
+}
+
 t_string	elements_resolve(t_elements *elements, t_environment *env)
 {
-	t_string			expanded;
 	t_string_builder	*builder;
-	char				*result;
 	size_t				index;
 	t_element			*temp;
 
@@ -73,14 +79,7 @@ t_string	elements_resolve(t_elements *elements, t_environment *env)
 		else
 			string_builder_append_cstring(builder, temp->value.value);
 	}
-	result = string_builder_to_cstr(builder);
-	string_builder_free(&builder);
-	if (!elements->expandable)
-		return (string_create(result, true));
-	expanded = apply_pattern(result, env->working_dir.value);
-	if (expanded.value != result)
-		free(result);
-	return (expanded);
+	return (elements_resolve_epilogue(elements, env, builder));
 }
 
 t_optional_elements	elements_optional(t_elements *elements, bool present)

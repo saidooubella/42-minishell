@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 10:58:25 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 18:23:41 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 09:52:40 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ typedef struct s_parser
 	size_t			index;
 }	t_parser;
 
-t_optional_node		conjuction_expression(t_parser *parser);
+t_optional_node		expression(t_parser *parser);
 
 bool				redirect_in_expr(t_parser *parser, t_node *command);
 bool				is_unit_expr_beg(t_parser *parser);

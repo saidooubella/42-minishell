@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/12 14:06:27 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/26 22:38:05 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 10:10:16 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,9 @@ typedef struct s_globals
 
 extern t_globals	g_globals;
 
+int		entry_point(char **env, bool is_bonus);
+void	initialization(char **env, bool is_bonus);
 void	exec_command(t_lexer_result *result);
-void	initialization(char **env);
 char	*read_command_line(void);
 
 void	sigint_default_handler(int signum);
