@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/18 13:08:30 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/18 15:42:02 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/25 14:34:49 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ typedef struct s_optional_elements
 
 t_string			elements_resolve(t_elements *elements, t_environment *env);
 t_optional_elements	elements_optional(t_elements *elements, bool present);
-void				elements_add(t_elements *elements, t_string value, 
+void				elements_add(t_elements *elements, t_string value,
 						t_element_type type, bool expandable);
 void				elements_fill(t_elements *dst, t_elements **src);
 void				elements_free(t_elements **elements);

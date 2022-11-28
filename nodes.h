@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 13:38:46 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/18 17:51:02 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/25 11:49:03 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,9 +86,12 @@ typedef struct s_conjuction_node
 }	t_conjuction_node;
 
 t_optional_node	node_optional(t_node *node, bool present);
-t_node			*parent_node_new(t_token *left_parent, t_node *expression, t_token *right_parent);
+t_node			*parent_node_new(
+					t_token *left_parent, t_node *expression,
+					t_token *right_parent);
 t_node			*pipe_node_new(t_node *left, t_token *operator, t_node *right);
-t_node			*conjuction_node_new(t_node *left, t_token *operator, t_node *right);
+t_node			*conjuction_node_new(
+					t_node *left, t_token *operator, t_node *right);
 t_node			*command_node_new(void);
 void			command_add_arg(t_node	*_node, t_elements *arg);
 void			command_add_redirection(

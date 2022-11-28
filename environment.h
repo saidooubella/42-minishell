@@ -6,12 +6,12 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/15 11:21:46 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/17 20:54:52 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/25 15:56:02 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef ENVIRONEMNT_H
-# define ENVIRONEMNT_H
+#ifndef ENVIRONMENT_H
+# define ENVIRONMENT_H
 
 # include <sys/types.h>
 

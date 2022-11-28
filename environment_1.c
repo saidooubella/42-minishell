@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/15 11:23:01 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/17 21:02:26 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/25 17:27:24 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdint.h>
 
 #include "string_utils.h"
 #include "ft_printf.h"
@@ -26,14 +27,14 @@
 void	initilize_defaults(t_environment *env)
 {
 	t_symbol	symbol;
-	long long	shlvl;
+	int64_t		shlvl;
 	bool		error;
 
 	symbol.name = string_create("PWD", false);
 	symbol.value = string_create(env->working_dir.value, false);
 	env_put_var(env, symbol, true);
 	symbol.name = string_create("SHLVL", false);
-	shlvl = string_to_llong(env_get_var(env, "SHLVL", ""), &error);
+	shlvl = string_to_llong(env_get_var(env, "SHLVL", ""), false, &error);
 	if (error || shlvl > 1000000000)
 	{
 		if (shlvl > 1000000000)
@@ -59,12 +60,18 @@ void	fill_environment(t_environment *environment, char **env)
 		splitted = string_split(*env++, "=");
 		symbol.name = string_create(splitted[0], splitted[0] != NULL);
 		symbol.value = string_create(splitted[1], splitted[1] != NULL);
-		env_put_var(environment, symbol, true);
+		if (!string_equals(symbol.name.value, "OLDPWD"))
+			env_put_var(environment, symbol, true);
+		else
+		{
+			string_free(&symbol.name);
+			string_free(&symbol.value);
+		}
 		free(splitted);
 	}
 }
 
-t_environment *env_new(char **env)
+t_environment	*env_new(char **env)
 {
 	t_environment	*environment;
 
@@ -112,73 +119,12 @@ void	env_insert_var(t_environment *env, t_symbol symbol)
 		new_symbols = malloc(sizeof(t_symbol) * new_capacity);
 		if (new_symbols == NULL)
 			memory_error();
-		bytes_copy(new_symbols, env->symbols, env->symbols_size * sizeof(t_symbol));
+		bytes_copy(new_symbols, env->symbols,
+			env->symbols_size * sizeof(t_symbol));
 		free(env->symbols);
 		env->symbols_cap = new_capacity;
 		env->symbols = new_symbols;
 	}
 	env->symbols[env->symbols_size] = symbol;
 	env->symbols_size++;
-}
-
-char	*env_get_var(t_environment *env, char *name, char *fallback)
-{
-	size_t	target;
-	size_t	index;
-
-	target = -1;
-	index = -1;
-	while (++index < env->symbols_size)
-		if (string_equals(env->symbols[index].name.value, name))
-			return (env->symbols[index].value.value);
-	return (fallback);
-}
-
-void	env_remove_var(t_environment *env, char *name)
-{
-	ssize_t	target;
-	size_t	index;
-
-	target = -1;
-	index = -1;
-	if (string_equals(name, "_"))
-		return ;
-	while (++index < env->symbols_size)
-	{
-		if (!string_equals(env->symbols[index].name.value, name))
-			continue ;
-		target = index;
-		break ;
-	}
-	if (target == -1)
-		return ;
-	string_free(&env->symbols[target].name);
-	string_free(&env->symbols[target].value);
-	bytes_move(&env->symbols[target], &env->symbols[target + 1], sizeof(t_symbol) * (env->symbols_size - target));
-	env->symbols_size--;
-}
-
-void	env_put_var(t_environment *env, t_symbol symbol, bool force)
-{
-	size_t	index;
-
-	index = -1;
-	if (!force && string_equals(symbol.name.value, "_"))
-	{
-		string_free(&symbol.name);
-		string_free(&symbol.value);
-		return ;
-	}
-	while (++index < env->symbols_size)
-	{
-		if (string_equals(env->symbols[index].name.value, symbol.name.value))
-		{
-			string_free(&env->symbols[index].name);
-			string_free(&env->symbols[index].value);
-			env->symbols[index].name = symbol.name;
-			env->symbols[index].value = symbol.value;
-			return ;
-		}
-	}
-	env_insert_var(env, symbol);
 }

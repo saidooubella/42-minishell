@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   path_simplifier_1.c                                :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/11/24 21:45:57 by soubella          #+#    #+#             */
+/*   Updated: 2022/11/25 18:09:22 by soubella         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <sys/types.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -5,53 +17,7 @@
 #include "path_simplifier.h"
 #include "string_builder.h"
 #include "string_utils.h"
-
-void	path_free(t_path *path)
-{
-	t_path	*tmp;
-
-	while (path)
-	{
-		tmp = path->next;
-		free(path->part);
-		free(path);
-		path = tmp;
-	}
-}
-
-t_path	*path_from_string(char *path)
-{
-	size_t	path_len;
-	size_t	offset;
-	t_path	*head;
-	t_path	*tail;
-	ssize_t	index;
-	t_path	**target;
-	t_path	*new;
-	char	*sub;
-
-	path_len = string_length(path);
-	offset = 0;
-	head = NULL;
-	tail = NULL;
-	while (offset < path_len)
-	{
-		index = string_index_of(path + offset, "/");
-		if (index == -1)
-			index = string_length(path + offset);
-		sub = substring(path + offset, 0, index);
-		offset += index + 1;
-		target = &head;
-		if (head != 0)
-			target = &tail->next;
-		new = malloc(sizeof(t_path));
-		new->part = sub;
-		new->next = 0;
-		*target = new;
-		tail = new;
-	}
-	return head;
-}
+#include "utils.h"
 
 void	remove_last(t_path **_path)
 {
@@ -103,21 +69,17 @@ t_path	*path_simplify(t_path *path)
 	{
 		if (string_equals(path->part, ".."))
 			remove_last(&head);
-		else if (!string_equals(path->part, ".")) {
-			t_path *new = malloc(sizeof(t_path));
-			new->part = string_duplicate(path->part);
-			new->next = 0;
-			add_last(&head, new);
-		}
+		else if (!string_equals(path->part, "."))
+			add_last(&head, path_new(string_duplicate(path->part)));
 		path = path->next;
 	}
-	return head;
+	return (head);
 }
 
 char	*path_to_string(t_path *path)
 {
 	t_string_builder	*builder;
-	char 				*result;
+	char				*result;
 
 	builder = string_builder_new();
 	result = 0;
@@ -129,7 +91,7 @@ char	*path_to_string(t_path *path)
 	}
 	result = string_builder_to_cstr(builder);
 	string_builder_free(&builder);
-	return result;
+	return (result);
 }
 
 char	*simplify_path(char *path)
@@ -143,5 +105,5 @@ char	*simplify_path(char *path)
 	result = path_to_string(simple_path);
 	path_free(simple_path);
 	path_free(in_path);
-	return result;
+	return (result);
 }

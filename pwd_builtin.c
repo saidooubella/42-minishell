@@ -1,21 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   exec_resolver.h                                    :+:      :+:    :+:   */
+/*   pwd_builtin.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/11/14 16:31:35 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 14:30:41 by soubella         ###   ########.fr       */
+/*   Created: 2022/11/25 17:17:29 by soubella          #+#    #+#             */
+/*   Updated: 2022/11/25 17:51:06 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef EXEC_RESOLVER_H
-# define EXEC_RESOLVER_H
+#include <unistd.h>
+#include <stddef.h>
 
-# include "interpreter.h"
-# include "string.h"
+#include "environment.h"
+#include "ft_printf.h"
 
-char	*resolve_executable(t_environment *env, char *executable);
-
-#endif
+int	pwd_builtin(t_environment *env, size_t argc, char **argv)
+{
+	(void) argc;
+	(void) argv;
+	ft_printf(STDOUT_FILENO, "%s\n", env->working_dir.value);
+	return (0);
+}

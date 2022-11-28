@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/20 11:26:52 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/14 15:47:46 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/24 21:44:48 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,19 +70,4 @@ void	string_builder_append_char(t_string_builder *b, char chr)
 {
 	string_builder_ensure_capacity(b, 1);
 	b->buffer[b->size++] = chr;
-}
-
-char	*string_builder_to_cstr(t_string_builder *b)
-{
-	char	*string;
-	size_t	index;
-
-	string = malloc(b->size + 1);
-	if (string == NULL)
-		memory_error();
-	index = -1;
-	while (++index < b->size)
-		string[index] = b->buffer[index];
-	string[b->size] = '\0';
-	return (string);
 }

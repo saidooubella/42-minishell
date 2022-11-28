@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 14:38:56 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/11 09:32:09 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/24 21:45:14 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 # include <stdbool.h>
 
-typedef	struct s_string
+typedef struct s_string
 {
 	char	*value;
 	bool	freeable;

@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:08:51 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/11 11:22:55 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/25 13:18:56 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,10 +19,7 @@
 #include "lexer.h"
 #include "utils.h"
 
-void	set_case(
-	t_lexer_case *caze,
-	bool check(t_lexer *lexer),
-	bool apply(t_lexer *lexer, t_tokens *tokens))
+void	set_case(t_lexer_case *caze, t_check check, t_apply apply)
 {
 	caze->apply = apply;
 	caze->check = check;

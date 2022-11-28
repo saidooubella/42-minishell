@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:28:08 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/14 11:30:24 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/25 17:55:35 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@ bool	lexer_tokenize_word(t_lexer *lexer, t_tokens *tokens)
 bool	lexer_tokenize_raw_string(t_lexer *lexer, t_tokens *tokens)
 {
 	size_t	start;
+	bool	found;
 
 	lexer_tokenize_token(lexer, tokens, OPEN_SINGLE_QUOTE, 1);
 	start = lexer->index;
@@ -74,18 +75,16 @@ bool	lexer_tokenize_raw_string(t_lexer *lexer, t_tokens *tokens)
 		lexer->index += 1;
 	tokens_smart_add(lexer, tokens, substring(lexer->content,
 			start, lexer->index), WORD);
-	if (lexer_current(lexer) == '\'')
-	{
+	found = lexer_expect(lexer, '\'', "unterminated string literal");
+	if (found)
 		lexer_tokenize_token(lexer, tokens, CLOSE_SINGLE_QUOTE, 1);
-		return (true);
-	}
-	ft_printf(STDERR_FILENO, "Error: unterminated string literal\n");
-	return (false);
+	return (found);
 }
 
 bool	lexer_tokenize_string(t_lexer *lexer, t_tokens *tokens)
 {
 	size_t	start;
+	bool	found;
 
 	lexer_tokenize_token(lexer, tokens, OPEN_DOUBLE_QUOTE, 1);
 	start = lexer->index;
@@ -105,11 +104,8 @@ bool	lexer_tokenize_string(t_lexer *lexer, t_tokens *tokens)
 	if (lexer->index - start > 0)
 		tokens_smart_add(lexer, tokens, substring(lexer->content,
 				start, lexer->index), WORD);
-	if (lexer_current(lexer) == '"')
-	{
+	found = lexer_expect(lexer, '"', "unterminated string literal");
+	if (found)
 		lexer_tokenize_token(lexer, tokens, CLOSE_DOUBLE_QUOTE, 1);
-		return (true);
-	}
-	ft_printf(STDERR_FILENO, "Error: unterminated string literal\n");
-	return (false);
+	return (found);
 }

@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/15 10:37:45 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/16 11:09:08 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/25 14:31:53 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,14 +53,19 @@ char	*find_command_path(char **paths, char *command)
 
 char	*resolve_executable(t_environment *env, char *executable)
 {
+	char	*actual_path;
+	char	**paths;
+	char	**temp;
+	char	*path;
+
 	if (string_index_of(executable, "/") != -1)
 		return (executable);
-	char *path = env_get_var(env, "PATH", NULL);
+	path = env_get_var(env, "PATH", NULL);
 	if (path == NULL)
 		return (NULL);
-	char **paths = string_split(path, ":");
-	char *actual_path = find_command_path(paths, executable);
-	char **temp = paths;
+	paths = string_split(path, ":");
+	actual_path = find_command_path(paths, executable);
+	temp = paths;
 	while (*temp)
 		free(*temp++);
 	free(paths);

@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:19:18 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/12 20:05:05 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/25 15:03:21 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,10 +32,13 @@ typedef struct s_lexer
 	size_t			whitespace_end;
 }	t_lexer;
 
+typedef bool				(*t_apply)(t_lexer *lexer, t_tokens *tokens);
+typedef bool				(*t_check)(t_lexer *lexer);
+
 typedef struct s_lexer_case
 {
-	bool	(*apply)(t_lexer *lexer, t_tokens *tokens);
-	bool	(*check)(t_lexer * lexer);
+	t_apply	apply;
+	t_check	check;
 }	t_lexer_case;
 
 typedef struct s_lexer_result

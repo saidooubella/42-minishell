@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:42:13 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/19 13:29:04 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/25 09:42:51 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ char		*string_join(char const *s1, char const *s2);
 bool		string_contains(char const *s1, char ch);
 ssize_t		string_index_of(char *target, char *str);
 char		**string_split(char *string, char *seps);
-long long	string_to_llong(char *str, bool *error);
+long long	string_to_llong(char *str, bool allow_neg, bool *error);
 char		*llong_to_string(long long number);
 size_t		string_length(const char *string);
 int			string_equals(char *s1, char *s2);

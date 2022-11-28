@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/10 18:57:09 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/12 11:57:39 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/28 09:44:50 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,13 +61,9 @@ int	ft_printf_raw(int fd, const char *format, va_list args)
 	while (*format)
 	{
 		if (*format == '%')
-		{
-			size += put_argument(fd, (char **) (format++, &format), args);
-		}
+			size += put_argument(fd, (char **)(format++, &format), args);
 		else
-		{
 			size += put_char(fd, *format++);
-		}
 	}
 	return (size);
 }

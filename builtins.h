@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 12:00:36 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/19 14:13:30 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/25 15:03:45 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ int			export_builtin(t_environment *env, size_t argc, char **argv);
 int			unset_builtin(t_environment *env, size_t argc, char **argv);
 int			env_builtin(t_environment *env, size_t argc, char **argv);
 int			exit_builtin(t_environment *env, size_t argc, char **argv);
-t_builtin	*builtin_lookup(t_builtin *builtins, char *target);
+t_builtin	*builtin_lookup(t_environment *env, t_elements *target);
 t_builtin	*initilize_builtins(void);
 
 #endif
