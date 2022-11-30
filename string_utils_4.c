@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 18:34:35 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 18:37:43 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 20:22:46 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,4 +102,19 @@ char	**string_split(char *string, char *seps)
 	}
 	strings[index] = NULL;
 	return (strings);
+}
+
+bool	string_contains_any(char const *s1, char *chrs)
+{
+	char	*temp;
+
+	while (*s1)
+	{
+		temp = chrs;
+		while (*temp)
+			if (*s1 == *temp++)
+				return (true);
+		s1++;
+	}
+	return (false);
 }

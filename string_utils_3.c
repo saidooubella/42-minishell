@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 18:32:35 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/28 20:49:41 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 20:30:19 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,4 +81,20 @@ ssize_t	string_index_of(char *target, char *str)
 		index++;
 	}
 	return (-1);
+}
+
+char	*string_trim(char *str)
+{
+	size_t	start;
+	size_t	end;
+
+	start = 0;
+	while (is_whitespace((unsigned char) str[start]))
+		start++;
+	if (str[start] == 0)
+		return (string_duplicate(""));
+	end = start + string_length(&str[start]) - 1;
+	while (end > start && is_whitespace((unsigned char) str[end]))
+		end--;
+	return (substring(str, start, end + 1));
 }

@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 14:35:12 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/28 10:05:26 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 21:47:47 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,13 @@ t_elements	*elements_new(void)
 {
 	return (elements_new_cap(16));
 }
-
+#include <unistd.h>
+#include "ft_printf.h"
 void	handle_variable(
 	t_environment *env, t_string_builder *builder, t_element *var)
 {
 	char	*exit_code;
+	char	*value;
 
 	if (string_equals(var->value.value, "?"))
 	{
@@ -36,8 +38,14 @@ void	handle_variable(
 		free(exit_code);
 	}
 	else
-		string_builder_append_cstring(builder,
-			env_get_var(env, var->value.value, ""));
+	{
+		value = env_get_var(env, var->value.value, "");
+		if (!var->in_string)
+			value = string_trim(value);
+		string_builder_append_cstring(builder, value);
+		if (!var->in_string)
+			free(value);
+	}
 }
 
 t_string	elements_resolve_epilogue(
@@ -57,9 +65,7 @@ t_string	elements_resolve_epilogue(
 			free(result);
 	}
 	else
-	{
 		expanded = string_create(result, true);
-	}
 	return (expanded);
 }
 

@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 10:58:25 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/28 09:52:40 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 21:35:48 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,8 +60,8 @@ t_token				*parser_consume(t_parser *parser);
 t_optional_token	parser_expect(
 						t_parser *parser, t_token_type type, char *expected);
 t_string			current_lexeme(t_parser *parser);
-t_elements			*word_expr(t_parser *parser);
-t_elements			*var_expr(t_parser *parser, bool var_expantion);
+t_elements			*word_expr(t_parser *parser, bool in_string);
+t_elements			*var_expr(t_parser *parser, bool var_expantion, bool in_string);
 t_elements			*string_expr(t_parser *parser, bool var_expantion);
 
 t_optional_node		parse(t_parser *parser);

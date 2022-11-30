@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:47:53 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/12 20:08:28 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 19:04:23 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ bool	lexer_reached_end(t_lexer *lexer)
 static bool	skip_whitespace_check_end(t_lexer *lexer)
 {
 	lexer->whitespace_start = lexer->index;
-	while (is_space(lexer_current(lexer)))
+	while (is_whitespace(lexer_current(lexer)))
 		lexer->index++;
 	lexer->whitespace_end = lexer->index;
 	return (!lexer_reached_end(lexer));

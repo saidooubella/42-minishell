@@ -1,26 +1,37 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   lexer_utils.c                                      :+:      :+:    :+:   */
+/*   interpreter_7.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/11/04 10:50:41 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/30 19:04:11 by soubella         ###   ########.fr       */
+/*   Created: 2022/11/30 21:04:25 by soubella          #+#    #+#             */
+/*   Updated: 2022/11/30 21:04:54 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdbool.h>
+#include <stdlib.h>
+#include <stddef.h>
 
-bool	is_identifier_start(char c)
-{
-	return (('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || c == '_');
-}
+#include "string_utils.h"
 
-bool	is_identifier_cont(char c)
+bool	has_multiple_parts(char *string)
 {
-	return (('a' <= c && c <= 'z')
-		|| ('A' <= c && c <= 'Z')
-		|| ('0' <= c && c <= '9')
-		|| (c == '_'));
+	char	**splitted;
+	bool	result;
+	size_t	size;
+
+	splitted = string_split(string, " \t\v\n\r\f");
+	result = false;
+	size = 0;
+	while (splitted[size])
+		size++;
+	if (size != 1)
+		result = true;
+	size = -1;
+	while (splitted[++size])
+		free(splitted[size]);
+	free(splitted);
+	return (result);
 }

@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:35:01 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/30 10:40:35 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 21:19:41 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,9 +57,7 @@ static t_result	exec_builtin(
 	stdout_copy = duplicate_fd(STDOUT_FILENO);
 	extra.in = duplicate_fd(extra.in);
 	extra.out = duplicate_fd(extra.out);
-	resolve_redirections(env, node, &extra.in, &extra.out);
-	redirect_fd(extra.in, STDIN_FILENO);
-	redirect_fd(extra.out, STDOUT_FILENO);
+	resolve_program_io(env, node, extra.in, extra.out);
 	result = result_create(EXIT_STATUS,
 			builtin->block(env, size, args));
 	exec_builtin_epilogue(args, stdin_copy, stdout_copy);
@@ -74,9 +72,7 @@ static void	exec_program(
 	char	*executable_path;
 	size_t	size;
 
-	resolve_redirections(env, node, &extra.in, &extra.out);
-	redirect_fd(extra.out, STDOUT_FILENO);
-	redirect_fd(extra.in, STDIN_FILENO);
+	resolve_program_io(env, node, extra.in, extra.out);
 	if (node->args_size > 0)
 	{
 		args = unwrap_args(env, node, &size, true);

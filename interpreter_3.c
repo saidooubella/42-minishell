@@ -6,11 +6,12 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:31:19 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/26 13:48:37 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 20:11:34 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include <errno.h>
 
@@ -23,11 +24,13 @@ static void	redirect_in(
 {
 	t_string	path;
 
+	if (is_file_ambiguous(elements, env))
+		exit(0);
 	close_fd(*in);
 	path = elements_resolve(elements, env);
 	*in = open(path.value, O_RDONLY);
 	if (*in == -1)
-		error("minishell: %s: %s", strerror(errno), path);
+		error("minishell: %s: %s", path.value, strerror(errno));
 	string_free(&path);
 }
 
@@ -36,11 +39,13 @@ static void	redirect_out(
 {
 	t_string	path;
 
+	if (is_file_ambiguous(elements, env))
+		exit(0);
 	close_fd(*out);
 	path = elements_resolve(elements, env);
 	*out = open(path.value, O_WRONLY | O_TRUNC | O_CREAT, 0644);
 	if (*out == -1)
-		error("minishell: %s: %s", strerror(errno), path);
+		error("minishell: %s: %s", path.value, strerror(errno));
 	string_free(&path);
 }
 
@@ -65,11 +70,13 @@ static void	redirect_append_in(
 {
 	t_string	path;
 
+	if (is_file_ambiguous(elements, env))
+		exit(0);
 	close_fd(*out);
 	path = elements_resolve(elements, env);
 	*out = open(path.value, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	if (*out == -1)
-		error("minishell: %s: %s", strerror(errno), path.value);
+		error("minishell: %s: %s", path.value, strerror(errno));
 	string_free(&path);
 }
 

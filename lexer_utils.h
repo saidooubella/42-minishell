@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:50:56 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/04 10:51:42 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 20:00:23 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,5 @@
 
 bool	is_identifier_start(char c);
 bool	is_identifier_cont(char c);
-bool	is_space(char c);
 
 #endif

@@ -6,14 +6,16 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/27 11:17:22 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/27 11:31:34 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 21:04:15 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "string_utils.h"
 #include "interpreter.h"
+#include "ft_printf.h"
 
 t_to_be_closed	*to_be_closed_new(void)
 {
@@ -44,4 +46,50 @@ void	to_be_closed_add(t_to_be_closed	*element, int fd)
 		element->fds = new_fds;
 	}
 	element->fds[element->size++] = fd;
+}
+
+void	resolve_program_io(
+	t_environment *env, t_command_node *node, int in, int out)
+{
+	int	old_out;
+	int	old_in;
+
+	old_out = out;
+	old_in = in;
+	redirect_fd(out, STDOUT_FILENO);
+	redirect_fd(in, STDIN_FILENO);
+	resolve_redirections(env, node, &in, &out);
+	if (out != old_out)
+		redirect_fd(out, STDOUT_FILENO);
+	if (in != old_in)
+		redirect_fd(in, STDIN_FILENO);
+}
+
+bool	is_file_ambiguous(t_elements *elements, t_environment *env)
+{
+	t_string	temp;
+	bool		result;
+
+	result = false;
+	if (elements->size == 1 && elements->elements->type == VAR_ELEMENT)
+	{
+		temp = elements_resolve(elements, env);
+		if (string_is_blank(temp.value) || has_multiple_parts(temp.value))
+		{
+			ft_printf(STDERR_FILENO,
+				"minishell: $%s: ambiguous redirect\n",
+				elements->elements->value);
+			result = true;
+		}
+		string_free(&temp);
+	}
+	return (result);
+}
+
+bool	is_empty_argument(t_elements *elements, t_environment *env)
+{
+	return (elements->size == 1
+		&& elements->elements->type == VAR_ELEMENT
+		&& string_is_blank(env_get_var(env,
+				elements->elements->value.value, NULL)));
 }

@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 18:18:15 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/28 18:56:27 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 21:37:57 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ static t_elements	*resolve_vars(char *original_line, char *line)
 	{
 		elements = elements_new_cap(1);
 		elements_add(elements,
-			string_create(line, true), WORD_ELEMENT, false);
+			string_create(line, true), WORD_ELEMENT, false, true);
 		return (elements);
 	}
 	elements = elements_new();
@@ -93,8 +93,8 @@ static void	process_line(t_elements *elements, char *line, bool expand_vars)
 		elements_fill(elements, &temp);
 	}
 	else
-		elements_add(elements,
-			string_create(string_join(line, "\n"), true), WORD_ELEMENT, false);
+		elements_add(elements, string_create(string_join(line, "\n"), true),
+			WORD_ELEMENT, false, true);
 	free(line);
 }
 
@@ -114,8 +114,8 @@ t_optional_elements	read_from_stdin(char *limiter, bool expand_vars)
 		line = stdin_read(limiter, &success);
 		if (line == NULL)
 			break ;
-		// if (!isatty(STDIN_FILENO))
-		// 	ft_printf(STDOUT_FILENO, "\033[1A\033[K");
+		if (!isatty(STDIN_FILENO))
+			ft_printf(STDOUT_FILENO, "\033[1A\033[K");
 		process_line(elements, line, expand_vars);
 	}
 	signal(SIGINT, sigint_default_handler);

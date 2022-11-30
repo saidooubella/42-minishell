@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 18:16:17 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/30 10:56:17 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 21:37:28 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ static t_elements	*raw_string_expr(t_parser *parser)
 	if (parser_current_is(parser, WORD))
 	{
 		elements = elements_new_cap(1);
-		elements_add(elements, current_lexeme(parser), WORD_ELEMENT, false);
+		elements_add(elements, current_lexeme(parser), WORD_ELEMENT, false, true);
 	}
 	else
 		elements = elements_new_cap(0);
@@ -38,7 +38,7 @@ t_optional_elements	unit_expression(
 	bool *wildcard_expantion, bool *has_quotes)
 {
 	if (parser_current_is(parser, WORD))
-		return (elements_optional(word_expr(parser), true));
+		return (elements_optional(word_expr(parser, false), true));
 	if (parser_current_is(parser, OPEN_DOUBLE_QUOTE))
 	{
 		*wildcard_expantion = false;
@@ -54,7 +54,7 @@ t_optional_elements	unit_expression(
 	if (parser_current_is(parser, DOLLAR))
 	{
 		*wildcard_expantion = false;
-		return (elements_optional(var_expr(parser, var_expantion), true));
+		return (elements_optional(var_expr(parser, var_expantion, false), true));
 	}
 	return (elements_optional(NULL, false));
 }
@@ -109,7 +109,7 @@ char	*create_var(t_elements *elements, char *line, t_string_builder *builder)
 	{
 		elements_add(elements,
 			string_create(string_builder_to_cstr(builder), true),
-			WORD_ELEMENT, false);
+			WORD_ELEMENT, false, true);
 		string_builder_clear(builder);
 	}
 	if (*line == '\0')
@@ -119,6 +119,6 @@ char	*create_var(t_elements *elements, char *line, t_string_builder *builder)
 		index++;
 	elements_add(elements,
 		string_create(substring(line, 0, index), true),
-		VAR_ELEMENT, true);
+		VAR_ELEMENT, true, true);
 	return (line + index);
 }

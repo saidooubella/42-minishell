@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/27 11:33:32 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/27 11:33:34 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 15:23:28 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ void	redirect_fd(int src, int dst)
 {
 	if (src == -1)
 		return ;
+	close_fd(dst);
 	if (dup2(src, dst) == -1)
 		error("Couldn't redirect a file descriptor");
 	close_fd(src);

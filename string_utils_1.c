@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:41:23 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 18:35:40 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 19:58:44 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,4 +78,17 @@ bool	string_contains(char const *s1, char ch)
 		if (*s1++ == ch)
 			return (true);
 	return (false);
+}
+
+bool	string_is_blank(char const *s1)
+{
+	if (s1 == NULL)
+		return (true);
+	while (*s1)
+	{
+		if (!is_whitespace(*s1))
+			return (false);
+		s1++;
+	}
+	return (true);
 }

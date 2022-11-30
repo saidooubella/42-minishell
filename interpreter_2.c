@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:30:00 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 17:54:52 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 20:23:16 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ static size_t	calc_args_size(
 	t_environment *env, t_command_node *node, bool unwrap_all)
 {
 	t_string	resolved;
+	t_elements	*temp;
 	size_t		index;
 	size_t		size;
 
@@ -43,7 +44,10 @@ static size_t	calc_args_size(
 		size = 0;
 		while (++index < node->args_size)
 		{
-			resolved = elements_resolve(node->args[index], env);
+			temp = node->args[index];
+			if (is_empty_argument(temp, env))
+				continue ;
+			resolved = elements_resolve(temp, env);
 			if (string_length(resolved.value) != 0)
 				size += calc_words_count(resolved.value, " \t\f\n\r\v");
 			else
@@ -63,6 +67,8 @@ static char	**resolve_arg(
 	char		**splitted;
 	char		**temp;
 
+	if (is_empty_argument(target, env))
+		return (mapped);
 	resolved = elements_resolve(target, env);
 	if (unwrap_all)
 	{

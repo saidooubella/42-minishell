@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 18:30:29 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 18:36:28 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 19:03:54 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 #include "string_utils.h"
 
-static bool	is_whitespace(char c)
+bool	is_whitespace(char c)
 {
 	return (c == '\t' || c == '\n' || c == '\r'
 		|| c == ' ' || c == '\v' || c == '\f');
