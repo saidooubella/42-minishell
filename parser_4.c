@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 18:16:17 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/28 20:56:34 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 10:56:17 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ t_elements	*concatenation_expression(
 			parser_consume(parser);
 			temp = unit_expression(parser, expand,
 					&wildcard_expantion, has_quotes);
-			if (temp.elements == NULL)
+			if (!temp.present)
 				break ;
 			elements_fill(elements, &temp.elements);
 		}

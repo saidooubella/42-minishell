@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:35:01 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/28 20:23:13 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 10:40:35 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,9 +74,9 @@ static void	exec_program(
 	char	*executable_path;
 	size_t	size;
 
+	resolve_redirections(env, node, &extra.in, &extra.out);
 	redirect_fd(extra.out, STDOUT_FILENO);
 	redirect_fd(extra.in, STDIN_FILENO);
-	resolve_redirections(env, node, &extra.in, &extra.out);
 	if (node->args_size > 0)
 	{
 		args = unwrap_args(env, node, &size, true);

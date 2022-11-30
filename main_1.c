@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 11:01:21 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/28 20:30:27 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 10:45:38 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@
 t_globals	g_globals;
 
 // void f(void) { system("leaks minishell"); } atexit(f);
-#include <fcntl.h>
 
 int	entry_point(char **env, bool is_bonus)
 {
@@ -39,14 +38,13 @@ int	entry_point(char **env, bool is_bonus)
 	t_lexer			*lexer;
 	char			*line;
 
-	dup2(open("/dev/random", O_RDONLY), STDIN_FILENO);
 	initialization(env, is_bonus);
 	while (true)
 	{
 		line = read_command_line();
 		if (line == NULL)
 			break ;
-		lexer = lexer_new(line);
+		lexer = lexer_new(g_globals.env, line);
 		result = lexer_tokenize(lexer);
 		if (!result.success)
 			g_globals.env->exit_code = 258;

@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:08:51 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 13:18:56 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 10:44:39 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ t_lexer_case	*init_lexer_cases(void)
 	return (cases);
 }
 
-t_lexer	*lexer_new(char *content)
+t_lexer	*lexer_new(t_environment *env, char *content)
 {
 	t_lexer	*lexer;
 
@@ -64,6 +64,7 @@ t_lexer	*lexer_new(char *content)
 	lexer->cases = init_lexer_cases();
 	lexer->content = content;
 	lexer->index = 0;
+	lexer->env = env;
 	return (lexer);
 }
 

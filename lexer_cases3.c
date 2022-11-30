@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:29:37 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/11 11:25:33 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 10:47:27 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,12 +29,16 @@ bool	lexer_tokenize_pipe(t_lexer *lexer, t_tokens *tokens)
 
 bool	is_double_ampersand(t_lexer *lexer)
 {
-	return (lexer_current(lexer) == '&' && lexer_ahead(lexer) == '&');
+	if (lexer->env->is_bonus)
+		return (lexer_current(lexer) == '&' && lexer_ahead(lexer) == '&');
+	return (false);
 }
 
 bool	is_double_pipe(t_lexer *lexer)
 {
-	return (lexer_current(lexer) == '|' && lexer_ahead(lexer) == '|');
+	if (lexer->env->is_bonus)
+		return (lexer_current(lexer) == '|' && lexer_ahead(lexer) == '|');
+	return (false);
 }
 
 bool	is_double_greater_than(t_lexer *lexer)

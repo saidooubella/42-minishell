@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 18:21:35 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 18:26:20 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 11:03:14 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ int	command_expr_unit(t_parser *parser, t_node *command)
 	if (parser_current_is(parser, GREATER_THAN))
 		return (redirect_out_expr(parser, command));
 	if (parser_current_is(parser, LESS_THAN))
-		return (!redirect_in_expr(parser, command));
+		return (redirect_in_expr(parser, command));
 	if (is_unit_expr_beg(parser))
 	{
 		command_add_arg(command,
@@ -83,7 +83,7 @@ t_optional_node	command_expr(t_parser *parser)
 	while (!parser_reached_end(parser))
 	{
 		result = command_expr_unit(parser, command);
-		if (result == false)
+		if (result == 0)
 			return (node_optional(command, false));
 		if (result == -1)
 			break ;

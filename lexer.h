@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:19:18 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 15:03:21 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 10:45:11 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include <stdbool.h>
 # include <stddef.h>
 
+# include "environment.h"
 # include "tokens.h"
 
 # define CASES_SIZE 13
@@ -24,6 +25,7 @@ typedef struct s_lexer_case	t_lexer_case;
 
 typedef struct s_lexer
 {
+	t_environment	*env;
 	char			*content;
 	t_lexer_case	*cases;
 	size_t			length;
@@ -47,11 +49,11 @@ typedef struct s_lexer_result
 	bool		success;
 }	t_lexer_result;
 
+t_lexer			*lexer_new(t_environment *env, char *content);
 bool			lexer_reached_end(t_lexer *lexer);
 t_lexer_result	lexer_tokenize(t_lexer *lexer);
 char			lexer_current(t_lexer *lexer);
 char			lexer_ahead(t_lexer *lexer);
 void			lexer_free(t_lexer **lexer);
-t_lexer			*lexer_new(char *content);
 
 #endif

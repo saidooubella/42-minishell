@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:26:53 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 17:55:57 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 10:49:09 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,8 @@
 
 # include "lexer.h"
 
-# define SPECIAL_CHARS "\"'<|>()&$ \t\r\n\f\v"
+# define BONUS_SPECIAL_CHARS "\"'<|>()&$ \t\r\n\f\v"
+# define SPECIAL_CHARS "\"'<|>()$ \t\r\n\f\v"
 
 bool	lexer_expect(t_lexer *lexer, char expected, char *message);
 bool	lexer_tokenize_token(t_lexer *lexer, t_tokens *tokens,

@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:28:08 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 17:55:35 by soubella         ###   ########.fr       */
+/*   Updated: 2022/11/30 10:50:29 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,9 +56,16 @@ bool	lexer_tokenize_word(t_lexer *lexer, t_tokens *tokens)
 
 	start = lexer->index;
 	lexer->index += 1;
-	while (!lexer_reached_end(lexer) && !string_contains(SPECIAL_CHARS,
-			lexer_current(lexer)))
+	while (!lexer_reached_end(lexer))
+	{
+		if (lexer->env->is_bonus
+			&& string_contains(BONUS_SPECIAL_CHARS, lexer_current(lexer)))
+			break ;
+		if (!lexer->env->is_bonus
+			&& string_contains(SPECIAL_CHARS, lexer_current(lexer)))
+			break ;
 		lexer->index += 1;
+	}
 	tokens_smart_add(lexer, tokens, substring(lexer->content,
 			start, lexer->index), WORD);
 	return (true);
