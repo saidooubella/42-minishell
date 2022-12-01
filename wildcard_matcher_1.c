@@ -67,12 +67,10 @@ t_string	apply_pattern(char *pattern, char *directory)
 	struct dirent		*element;
 	char				*result;
 	DIR					*dir;
-	size_t				index;
 
 	if (string_index_of(pattern, "*") == -1)
 		return (string_create(pattern, true));
 	builder = string_builder_new();
-	index = -1;
 	dir = opendir(directory);
 	while (dir)
 	{

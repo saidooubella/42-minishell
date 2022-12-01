@@ -20,10 +20,8 @@
 
 char	*env_get_var(t_environment *env, char *name, char *fallback)
 {
-	size_t	target;
 	size_t	index;
 
-	target = -1;
 	index = -1;
 	while (++index < env->symbols_size)
 		if (string_equals(env->symbols[index].name.value, name))

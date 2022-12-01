@@ -32,18 +32,12 @@ void	command_node_free(t_command_node *node)
 
 void	parent_node_free(t_parent_node *node)
 {
-	size_t	index;
-
-	index = -1;
 	node_free(node->expression);
 	free(node);
 }
 
 void	pipe_node_free(t_pipe_node *node)
 {
-	size_t	index;
-
-	index = -1;
 	node_free(node->right);
 	node_free(node->left);
 	free(node);
@@ -51,9 +45,6 @@ void	pipe_node_free(t_pipe_node *node)
 
 void	conjuction_node_free(t_conjuction_node *node)
 {
-	size_t	index;
-
-	index = -1;
 	node_free(node->right);
 	node_free(node->left);
 	free(node);
