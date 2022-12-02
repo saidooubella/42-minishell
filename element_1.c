@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 14:35:12 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/30 21:47:47 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/02 13:58:07 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,14 +23,16 @@ t_elements	*elements_new(void)
 {
 	return (elements_new_cap(16));
 }
-#include <unistd.h>
-#include "ft_printf.h"
-void	handle_variable(
-	t_environment *env, t_string_builder *builder, t_element *var)
-{
-	char	*exit_code;
-	char	*value;
 
+void	handle_variable(
+	t_environment *env, t_string_builder *builder,
+	t_elements *elements, size_t index)
+{
+	char		*exit_code;
+	char		*value;
+	t_element	*var;
+
+	var = &elements->elements[index];
 	if (string_equals(var->value.value, "?"))
 	{
 		exit_code = llong_to_string(env->exit_code);
@@ -41,7 +43,7 @@ void	handle_variable(
 	{
 		value = env_get_var(env, var->value.value, "");
 		if (!var->in_string)
-			value = string_trim(value);
+			value = string_trim(value, index > 0, index < elements->size - 1);
 		string_builder_append_cstring(builder, value);
 		if (!var->in_string)
 			free(value);
@@ -81,7 +83,7 @@ t_string	elements_resolve(t_elements *elements, t_environment *env)
 	{
 		temp = &elements->elements[index];
 		if (temp->type == VAR_ELEMENT && temp->expandable)
-			handle_variable(env, builder, temp);
+			handle_variable(env, builder, elements, index);
 		else
 			string_builder_append_cstring(builder, temp->value.value);
 	}

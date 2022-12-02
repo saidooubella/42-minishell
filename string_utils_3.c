@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 18:32:35 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/30 20:30:19 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/02 15:46:00 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,18 +83,22 @@ ssize_t	string_index_of(char *target, char *str)
 	return (-1);
 }
 
-char	*string_trim(char *str)
+char	*string_trim(char *str, bool keep_left_one, bool keep_right_one)
 {
 	size_t	start;
 	size_t	end;
+	size_t	len;
 
 	start = 0;
+	len = string_length(str);
 	while (is_whitespace((unsigned char) str[start]))
 		start++;
-	if (str[start] == 0)
-		return (string_duplicate(""));
-	end = start + string_length(&str[start]) - 1;
+	end = len - 1;
 	while (end > start && is_whitespace((unsigned char) str[end]))
 		end--;
+	if (keep_right_one && end < len)
+		end += 1;
+	if (keep_left_one && start > 0)
+		start -= 1;
 	return (substring(str, start, end + 1));
 }

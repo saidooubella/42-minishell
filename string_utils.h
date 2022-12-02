@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:42:13 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/30 20:27:13 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/02 13:56:37 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 # define _LONG_MIN 9223372036854775808ull
 
 bool		string_starts_with(char *str, char *to_find, size_t to_find_len);
+char		*string_trim(char *str, bool keep_left_one, bool keep_right_one);
 int			string_compare(const char *s1, const char *s2, size_t n);
 long long	string_to_llong(char *str, bool allow_neg, bool *error);
 void		*bytes_move(void *dst, const void *src, size_t len);
@@ -38,7 +39,6 @@ int			string_equals(char *s1, char *s2);
 bool		string_is_blank(char const *s1);
 int			are_equals(char *s1, char *s2);
 char		*string_duplicate(char *s1);
-char		*string_trim(char *str);
 bool		is_whitespace(char c);
 
 #endif

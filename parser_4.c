@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 18:16:17 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/30 21:37:28 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/02 13:49:16 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,8 @@ static t_elements	*raw_string_expr(t_parser *parser)
 	if (parser_current_is(parser, WORD))
 	{
 		elements = elements_new_cap(1);
-		elements_add(elements, current_lexeme(parser), WORD_ELEMENT, false, true);
+		elements_add(elements, element_create(current_lexeme(parser),
+				WORD_ELEMENT, false, true));
 	}
 	else
 		elements = elements_new_cap(0);
@@ -54,7 +55,8 @@ t_optional_elements	unit_expression(
 	if (parser_current_is(parser, DOLLAR))
 	{
 		*wildcard_expantion = false;
-		return (elements_optional(var_expr(parser, var_expantion, false), true));
+		return (elements_optional(
+				var_expr(parser, var_expantion, false), true));
 	}
 	return (elements_optional(NULL, false));
 }
@@ -108,8 +110,8 @@ char	*create_var(t_elements *elements, char *line, t_string_builder *builder)
 	if (builder->size > 0)
 	{
 		elements_add(elements,
-			string_create(string_builder_to_cstr(builder), true),
-			WORD_ELEMENT, false, true);
+			element_create(string_create(string_builder_to_cstr(builder), true),
+				WORD_ELEMENT, false, true));
 		string_builder_clear(builder);
 	}
 	if (*line == '\0')
@@ -118,7 +120,7 @@ char	*create_var(t_elements *elements, char *line, t_string_builder *builder)
 	while (line[index] && is_identifier_cont(line[index]))
 		index++;
 	elements_add(elements,
-		string_create(substring(line, 0, index), true),
-		VAR_ELEMENT, true, true);
+		element_create(string_create(substring(line, 0, index), true),
+			VAR_ELEMENT, true, true));
 	return (line + index);
 }

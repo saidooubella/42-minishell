@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 18:18:15 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/30 21:37:57 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/02 13:49:39 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,8 @@ static t_elements	*resolve_vars(char *original_line, char *line)
 	{
 		elements = elements_new_cap(1);
 		elements_add(elements,
-			string_create(line, true), WORD_ELEMENT, false, true);
+			element_create(string_create(line, true),
+				WORD_ELEMENT, false, true));
 		return (elements);
 	}
 	elements = elements_new();
@@ -93,8 +94,9 @@ static void	process_line(t_elements *elements, char *line, bool expand_vars)
 		elements_fill(elements, &temp);
 	}
 	else
-		elements_add(elements, string_create(string_join(line, "\n"), true),
-			WORD_ELEMENT, false, true);
+		elements_add(elements,
+			element_create(string_create(string_join(line, "\n"), true),
+				WORD_ELEMENT, false, true));
 	free(line);
 }
 

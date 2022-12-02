@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/18 13:08:30 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/30 21:31:48 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/02 13:44:01 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,10 +47,11 @@ typedef struct s_optional_elements
 	bool		present;
 }	t_optional_elements;
 
+t_element			element_create(t_string value, t_element_type type,
+						bool expandable, bool in_string);
 t_string			elements_resolve(t_elements *elements, t_environment *env);
 t_optional_elements	elements_optional(t_elements *elements, bool present);
-void				elements_add(t_elements *elements, t_string value,
-						t_element_type type, bool expandable, bool in_string);
+void				elements_add(t_elements *elements, t_element element);
 void				elements_fill(t_elements *dst, t_elements **src);
 void				elements_free(t_elements **elements);
 t_elements			*elements_new_cap(size_t capacity);

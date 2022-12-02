@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:26:10 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/30 21:38:17 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/02 13:49:02 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,17 +43,28 @@ void	elements_fill(t_elements *dst, t_elements **src)
 	while (index < (*src)->size)
 	{
 		temp = &(*src)->elements[index++];
-		elements_add(dst, temp->value, temp->type,
-			temp->expandable, temp->in_string);
+		elements_add(dst, element_create(temp->value, temp->type,
+				temp->expandable, temp->in_string));
 	}
 	free((*src)->elements);
 	free((*src));
 	*src = NULL;
 }
 
-void	elements_add(
-	t_elements *elements, t_string value,
-	t_element_type type, bool expandable, bool in_string)
+t_element	element_create(
+	t_string value, t_element_type type, bool expandable, bool in_string)
+{
+	t_element	element;
+
+	element.expandable = expandable;
+	element.expandable = expandable;
+	element.in_string = in_string;
+	element.value = value;
+	element.type = type;
+	return (element);
+}
+
+void	elements_add(t_elements *elements, t_element element)
 {
 	size_t		new_capacity;
 	t_element	*new_elements;
@@ -70,11 +81,7 @@ void	elements_add(
 		elements->capacity = new_capacity;
 		elements->elements = new_elements;
 	}
-	elements->elements[elements->size].expandable = expandable;
-	elements->elements[elements->size].in_string = in_string;
-	elements->elements[elements->size].value = value;
-	elements->elements[elements->size].type = type;
-	elements->size++;
+	elements->elements[elements->size++] = element;
 }
 
 void	elements_free(t_elements **elements)
