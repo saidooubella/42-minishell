@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:30:00 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/02 18:42:36 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/03 15:33:29 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,22 +21,22 @@
 #include "ft_printf.h"
 #include "parser.h"
 
-t_result result_create(t_result_type type, int extra)
+t_result	result_create(t_result_type type, int extra)
 {
-	t_result result;
+	t_result	result;
 
 	result.extra = extra;
 	result.type = type;
 	return (result);
 }
 
-static size_t calc_args_size(
+static size_t	calc_args_size(
 	t_environment *env, t_command_node *node, bool unwrap_all)
 {
-	t_string resolved;
-	t_elements *temp;
-	size_t index;
-	size_t size;
+	t_string	resolved;
+	t_elements	*temp;
+	size_t		index;
+	size_t		size;
 
 	index = -1;
 	size = 0;
@@ -44,7 +44,7 @@ static size_t calc_args_size(
 	{
 		temp = node->args[index];
 		if (is_empty_argument(temp, env))
-			continue;
+			continue ;
 		if (unwrap_all)
 		{
 			resolved = elements_resolve(temp, env);
@@ -60,13 +60,13 @@ static size_t calc_args_size(
 	return (size);
 }
 
-static char **resolve_arg(
+static char	**resolve_arg(
 	t_environment *env, t_elements *target,
 	char **mapped, bool unwrap_all)
 {
-	t_string resolved;
-	char **splitted;
-	char **temp;
+	t_string	resolved;
+	char		**splitted;
+	char		**temp;
 
 	if (is_empty_argument(target, env))
 		return (mapped);
@@ -90,14 +90,14 @@ static char **resolve_arg(
 	return (mapped);
 }
 
-char **unwrap_args(
+char	**unwrap_args(
 	t_environment *env, t_command_node *node,
 	size_t *actual_size, bool unwrap_all)
 {
-	size_t args_index;
-	size_t index;
-	char **mapped;
-	char **temp;
+	size_t	args_index;
+	size_t	index;
+	char	**mapped;
+	char	**temp;
 
 	args_index = -1;
 	*actual_size = calc_args_size(env, node, unwrap_all);
@@ -109,19 +109,19 @@ char **unwrap_args(
 	while (++args_index < node->args_size)
 	{
 		temp = resolve_arg(env, node->args[args_index],
-						   mapped + index, unwrap_all);
+				mapped + index, unwrap_all);
 		index += temp - (mapped + index);
 	}
 	mapped[index] = NULL;
 	return (mapped);
 }
 
-char **unwrap_env(t_symbol *syms, size_t size)
+char	**unwrap_env(t_symbol *syms, size_t size)
 {
-	size_t index;
-	char **mapped;
-	char *str1;
-	char *str2;
+	size_t	index;
+	char	**mapped;
+	char	*str1;
+	char	*str2;
 
 	mapped = malloc(sizeof(char *) * (size + 1));
 	if (mapped == NULL)

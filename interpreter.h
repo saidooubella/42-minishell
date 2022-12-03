@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 10:40:35 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/30 21:04:09 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/03 15:42:59 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ void			close_fd(int fd);
 bool			has_multiple_parts(char *string);
 bool			is_empty_argument(t_elements *elements, t_environment *env);
 bool			is_file_ambiguous(t_elements *elements, t_environment *env);
-void			resolve_program_io(
+bool			resolve_program_io(
 					t_environment *env, t_command_node *node,
 					int in, int out);
 
@@ -70,9 +70,8 @@ char			**unwrap_args(
 					size_t *actual_size, bool unwrap_all);
 char			**unwrap_env(t_symbol *syms, size_t size);
 
-void			resolve_redirections(
-					t_environment *env,
-					t_command_node *node, int *in, int *out);
+bool			resolve_redirections(
+					t_environment *env, t_command_node *node);
 
 t_result		visit_parent_node(
 					t_environment *env, t_parent_node *node,

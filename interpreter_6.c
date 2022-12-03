@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/27 11:17:22 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/02 16:00:40 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/03 15:42:52 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,21 +48,12 @@ void	to_be_closed_add(t_to_be_closed	*element, int fd)
 	element->fds[element->size++] = fd;
 }
 
-void	resolve_program_io(
+bool	resolve_program_io(
 	t_environment *env, t_command_node *node, int in, int out)
 {
-	int	old_out;
-	int	old_in;
-
-	old_out = out;
-	old_in = in;
 	redirect_fd(out, STDOUT_FILENO);
 	redirect_fd(in, STDIN_FILENO);
-	resolve_redirections(env, node, &in, &out);
-	if (out != old_out)
-		redirect_fd(out, STDOUT_FILENO);
-	if (in != old_in)
-		redirect_fd(in, STDIN_FILENO);
+	return resolve_redirections(env, node);
 }
 
 bool	is_file_ambiguous(t_elements *elements, t_environment *env)
@@ -90,6 +81,7 @@ bool	is_empty_argument(t_elements *elements, t_environment *env)
 {
 	return (elements->size == 1
 		&& elements->elements->type == VAR_ELEMENT
+		&& !string_equals(elements->elements->value.value, "?")
 		&& string_is_blank(env_get_var(env,
 				elements->elements->value.value, NULL)));
 }

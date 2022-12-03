@@ -1,7 +1,7 @@
 
 IFLAG=-I ~/.brew/Cellar/readline/8.2.1/include
 LFLAG=-L ~/.brew/Cellar/readline/8.2.1/lib
-FLAGS=-Wall -Wextra -Werror -g
+FLAGS=-Wall -Wextra -Werror -g -fsanitize=address
 BONUS_NAME=minishell_bonus
 NAME=minishell
 CC=cc

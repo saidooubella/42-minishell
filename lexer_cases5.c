@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:35:47 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/11 11:26:11 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/03 14:29:47 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,9 @@ bool	lexer_tokenize_parenthesize(t_lexer *lexer, t_tokens *tokens)
 
 bool	is_parenthesize(t_lexer *lexer)
 {
-	return (lexer_current(lexer) == '(' || lexer_current(lexer) == ')');
+	if (lexer->env->is_bonus)
+		return (lexer_current(lexer) == '(' || lexer_current(lexer) == ')');
+	return (false);
 }
 
 bool	is_single_quote(t_lexer *lexer)
