@@ -1,20 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   minishell.c                                        :+:      :+:    :+:   */
+/*   utils.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/11/28 10:10:43 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/06 17:00:29 by soubella         ###   ########.fr       */
+/*   Created: 2022/11/04 13:45:27 by soubella          #+#    #+#             */
+/*   Updated: 2022/12/06 16:30:11 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "entry_point.h"
+#ifndef UTILS_H
+# define UTILS_H
 
-int	main(int ac, char **av, char **env)
-{
-	(void) ac;
-	(void) av;
-	return (entry_point(env, false));
-}
+# include "lexer.h"
+
+void	tokens_smart_add(
+			t_lexer *lexer, t_tokens *tokens,
+			char *lexeme, t_token_type type);
+void	error(char *fmt, ...);
+void	memory_error(void);
+
+#endif

@@ -17,23 +17,23 @@ Use `make fclean` to remove any files produced by building the program.
 # - The Grammar:
 
 ```
-expresion	:	and_or
-			;
+expresion   :    and_or
+            ;    
 
-and_or		:	pipeline ('&&' | '||') pipeline
-			;
+and_or      :    pipeline ('&&' | '||') pipeline
+            ;
 
-pipeline	:	primary '|' primary
-			;
+pipeline    :    primary '|' primary
+            ;
 
-primary		:	WORD
-			|	'"([^"]|$[a-zA-Z_][a-zA-Z0-9_]*)*"'
-			|	"'([^'])*'"
-			|	'(' expresion ')'
-			|	'$'  [a-zA-Z_][a-zA-Z0-9_]*
-			|	'<<' LIMITER
-			|	'>>' FILE
-			|	'>'	 FILE
-			|	'<'	 FILE
-			;
+primary     :    WORD
+            |    '"([^"]|$[a-zA-Z_][a-zA-Z0-9_]*)*"'
+            |    "'([^'])*'"
+            |    '(' expresion ')'
+            |    '$'  [a-zA-Z_][a-zA-Z0-9_]*
+            |    '<<' LIMITER
+            |    '>>' FILE
+            |    '>'  FILE
+            |    '<'  FILE
+            ;
 ```

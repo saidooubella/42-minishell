@@ -1,60 +1,73 @@
 
-IFLAG=-I ~/.brew/Cellar/readline/8.2.1/include
-LFLAG=-L ~/.brew/Cellar/readline/8.2.1/lib
-FLAGS=-Wall -Wextra -Werror -g -fsanitize=address
+IFLAG=-I ~/.brew/Cellar/readline/8.2.1/include -I includes
+LFLAG=-L ~/.brew/Cellar/readline/8.2.1/lib -lreadline
+FLAGS=-Wall -Wextra -Werror -MMD
 BONUS_NAME=minishell_bonus
 NAME=minishell
 CC=cc
 
-COMMON=builtins.c cd_builtin_1.c cd_builtin_2.c echo_builtin.c element_1.c \
-string_builder1.c string_builder2.c string_utils_1.c string_utils_2.c string_utils_3.c \
-lexer_utils.c main_1.c main_2.c nodes_1.c wildcard_matcher_2.c wildcard_matcher_1.c \
-interpreter_5.c interpreter_6.c interpreter_7.c lexer1.c lexer2.c lexer_cases1.c \
-exit_builtin.c export_builtin.c ft_char_print_utils.c ft_number_print_utils.c \
-string_utils_4.c string_utils_5.c tokens.c unset_builtin.c utils.c nodes_2.c \
-ft_printf.c interpreter_1.c interpreter_2.c interpreter_3.c interpreter_4.c \
-nodes_3.c parser_1.c parser_2.c parser_3.c parser_4.c parser_5.c parser_6.c \
-lexer_cases2.c lexer_cases3.c lexer_cases4.c lexer_cases5.c lexer_cases6.c \
-element_2.c env_builtin.c environment_1.c environment_2.c exec_resolver.c \
-parser_7.c path_simplifier_1.c path_simplifier_2.c pwd_builtin.c string.c
+COMMON=entry_point/entry_point_1.c entry_point/entry_point_2.c \
+lexer/lexer_cases6.c lexer/lexer_utils.c lexer/tokens.c parser/nodes/nodes_1.c \
+utils/exec_resolver/exec_resolver.c utils/path_simplifier/path_simplifier_1.c \
+utils/path_simplifier/path_simplifier_2.c utils/printf/ft_char_print_utils.c \
+parser/parser_2.c parser/parser_3.c parser/parser_4.c parser/parser_5.c \
+lexer/lexer1.c lexer/lexer2.c lexer/lexer_cases1.c lexer/lexer_cases2.c \
+utils/strings/free_aware_string.c utils/strings/string_builder1.c \
+interpreter/interpreter_1.c utils/wildcards/wildcard_matcher_2.c \
+parser/nodes/nodes_2.c parser/nodes/nodes_3.c parser/parser_1.c \
+lexer/lexer_cases3.c lexer/lexer_cases4.c lexer/lexer_cases5.c \
+utils/strings/string_builder2.c utils/strings/string_utils_1.c \
+parser/parser_6.c parser/parser_7.c utils/builtins/builtins.c \
+utils/builtins/exit_builtin.c utils/builtins/export_builtin.c \
+utils/printf/ft_number_print_utils.c utils/printf/ft_printf.c \
+utils/strings/string_utils_2.c utils/strings/string_utils_3.c \
+utils/strings/string_utils_4.c utils/strings/string_utils_5.c \
+utils/builtins/pwd_builtin.c utils/builtins/unset_builtin.c \
+utils/builtins/cd_builtin_1.c utils/builtins/cd_builtin_2.c \
+utils/builtins/echo_builtin.c utils/builtins/env_builtin.c \
+interpreter/interpreter_2.c interpreter/interpreter_3.c \
+interpreter/interpreter_4.c interpreter/interpreter_5.c \
+interpreter/interpreter_6.c interpreter/interpreter_7.c \
+utils/elements/element_1.c utils/elements/element_2.c \
+utils/env/environment_1.c utils/env/environment_2.c \
+utils/utils.c utils/wildcards/wildcard_matcher_1.c
 
-HEADERS=builtins.h element.h environment.h exec_resolver.h ft_printf.h \
-interpreter.h lexer.h lexer_cases.h lexer_utils.h main.h nodes.h parser.h \
-path_simplifier.h string.h string_builder.h string_utils.h tokens.h utils.h \
-wildcard_matcher.h
+ALL_FILES=$(COMMON) minishell_bonus.c minishell.c
 
-MAN_SRCS=$(COMMON) minishell.c
+DEPS_FILES=$(ALL_FILES:.c=.d)
 
-BONUS_SRCS=$(COMMON) minishell_bonus.c
+OBJS_FILES=$(ALL_FILES:.c=.o)
 
-MAN_OBJS=$(MAN_SRCS:.c=.o)
+BONUS_OBJS=$(COMMON:.c=.o) minishell_bonus.o
 
-BONUS_OBJS=$(BONUS_SRCS:.c=.o)
+MAN_OBJS=$(COMMON:.c=.o) minishell.o
 
 all: $(NAME)
 
 $(NAME): $(MAN_OBJS)
-	@ $(CC) $(FLAGS) $(LFLAG) -lreadline $^ -o $@
+	$(CC) $(LFLAG) $^ -o $@
 
 bonus: $(BONUS_NAME)
 
 $(BONUS_NAME): $(BONUS_OBJS)
-	@ $(CC) $(FLAGS) $(LFLAG) -lreadline $^ -o $@
+	$(CC) $(LFLAG) $^ -o $@
 
-%.o: %.c $(HEADERS)
-	@ $(CC) $(FLAGS) $(IFLAG) -c $< -o $@
+%.o: %.c
+	$(CC) $(FLAGS) $(IFLAG) -c $< -o $@
 
 clean:
-	@ rm -rf $(MAN_OBJS) $(BONUS_OBJS)
+	rm -f $(OBJS_FILES) $(DEPS_FILES)
 
 fclean: clean
-	@ rm -rf $(NAME) $(BONUS_NAME)
+	rm -f $(NAME) $(BONUS_NAME)
 
 re: fclean all
 
 check: all fclean
 
 run: all clean
-	@ ./minishell
+	./minishell
+
+-include $(DEPS_FILES)
 
 .PHONY: all bonus clean fclean re check run

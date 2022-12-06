@@ -1,20 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   minishell.c                                        :+:      :+:    :+:   */
+/*   exec_resolver.h                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/11/28 10:10:43 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/06 17:00:29 by soubella         ###   ########.fr       */
+/*   Created: 2022/11/14 16:31:35 by soubella          #+#    #+#             */
+/*   Updated: 2022/12/06 15:37:25 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "entry_point.h"
+#ifndef EXEC_RESOLVER_H
+# define EXEC_RESOLVER_H
 
-int	main(int ac, char **av, char **env)
-{
-	(void) ac;
-	(void) av;
-	return (entry_point(env, false));
-}
+# include "free_aware_string.h"
+# include "interpreter.h"
+
+char	*resolve_executable(t_environment *env, char *executable);
+
+#endif
