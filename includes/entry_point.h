@@ -6,12 +6,12 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/12 14:06:27 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/06 17:07:56 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/06 21:13:01 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef MAIN_H
-# define MAIN_H
+#ifndef ENTRY_POINT_H
+# define ENTRY_POINT_H
 
 # include "environment.h"
 # include "lexer.h"

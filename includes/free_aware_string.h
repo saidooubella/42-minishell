@@ -1,17 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   string.h                                           :+:      :+:    :+:   */
+/*   free_aware_string.h                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/09 14:38:56 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/24 21:45:14 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/06 21:12:45 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef STRING_H
-# define STRING_H
+#ifndef FREE_AWARE_STRING_H
+# define FREE_AWARE_STRING_H
 
 # include <stdbool.h>
 
