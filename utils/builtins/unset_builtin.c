@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:20:34 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 17:51:28 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/20 20:35:11 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ int	unset_builtin(t_environment *env, size_t argc, char **argv)
 		if (is_identifier_start(arg[jndex]))
 			while (is_identifier_cont(arg[jndex]))
 				jndex++;
-		if (arg[jndex] != '\0')
+		if (jndex == 0 || arg[jndex] != '\0')
 		{
 			ft_printf(STDERR_FILENO,
 				"export: `%s': not a valid identifier\n", arg);

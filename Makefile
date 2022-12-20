@@ -1,7 +1,7 @@
 
 IFLAG=-I ~/.brew/Cellar/readline/8.2.1/include -I includes
 LFLAG=-L ~/.brew/Cellar/readline/8.2.1/lib -lreadline
-FLAGS=-Wall -Wextra -Werror -MMD
+FLAGS=-Wall -Wextra -Werror -MMD -g
 BONUS_NAME=minishell_bonus
 NAME=minishell
 CC=cc
