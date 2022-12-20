@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:27:58 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/20 21:47:45 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/20 21:51:17 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ char	*env_get_var(t_environment *env, char *name, char *fallback)
 
 	index = -1;
 	while (++index < env->symbols_size)
+	{
 		if (string_equals(env->symbols[index].name.value, name))
 		{
 			temp = env->symbols[index].value.value;
@@ -32,6 +33,7 @@ char	*env_get_var(t_environment *env, char *name, char *fallback)
 				temp = "";
 			return (temp);
 		}
+	}
 	return (fallback);
 }
 
