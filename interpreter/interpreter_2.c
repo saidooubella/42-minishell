@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:30:00 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/03 15:33:29 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/19 21:42:29 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,6 +119,7 @@ char	**unwrap_args(
 char	**unwrap_env(t_symbol *syms, size_t size)
 {
 	size_t	index;
+	size_t	jndex;
 	char	**mapped;
 	char	*str1;
 	char	*str2;
@@ -127,13 +128,16 @@ char	**unwrap_env(t_symbol *syms, size_t size)
 	if (mapped == NULL)
 		memory_error();
 	index = -1;
+	jndex = 0;
 	while (++index < size)
 	{
+		if (!syms[index].has_value)
+			continue ;
 		str1 = string_join(syms[index].name.value, "=");
 		str2 = string_join(str1, syms[index].value.value);
 		free(str1);
-		mapped[index] = str2;
+		mapped[jndex++] = str2;
 	}
-	mapped[index] = NULL;
+	mapped[jndex] = NULL;
 	return (mapped);
 }

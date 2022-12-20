@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:17:55 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/02 15:54:27 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/19 21:44:43 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ static int	export_print_env(t_environment *env)
 		if (symbol.has_value)
 			ft_printf(STDOUT_FILENO, "=");
 		if (symbol.value.value != NULL)
-			ft_printf(STDOUT_FILENO, "%s", symbol.value.value);
+			ft_printf(STDOUT_FILENO, "\"%s\"", symbol.value.value);
 		ft_printf(STDOUT_FILENO, "\n");
 	}
 	return (0);
@@ -91,7 +91,7 @@ int	export_builtin(t_environment *env, size_t argc, char **argv)
 	{
 		arg = argv[index];
 		jndex = export_skip_name(arg);
-		if (arg[jndex] == '\0')
+		if (jndex > 0 && arg[jndex] == '\0')
 		{
 			symbol.name = string_create(string_duplicate(arg), true);
 			symbol.value = string_create(NULL, false);

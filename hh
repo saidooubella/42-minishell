@@ -1,0 +1,17 @@
+Makefile
+README.md
+entry_point
+hh
+includes
+interpreter
+lexer
+minishell
+minishell.c
+minishell.d
+minishell.o
+minishell_bonus
+minishell_bonus.c
+minishell_bonus.d
+minishell_bonus.o
+parser
+utils
