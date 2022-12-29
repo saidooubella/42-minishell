@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 10:40:35 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/06 15:37:21 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/29 18:31:20 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ void			to_be_closed_add(t_to_be_closed	*element, int fd);
 t_to_be_closed	*to_be_closed_new(void);
 
 t_result		await_process(t_result result);
-void			redirect_fd(int src, int dst);
+bool			redirect_fd(int src, int dst);
 int				duplicate_fd(int fd);
 void			close_fd(int fd);
 

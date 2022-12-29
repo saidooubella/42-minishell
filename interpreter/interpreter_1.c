@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/27 11:33:32 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/06 13:42:25 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/29 18:30:34 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include <stdlib.h>
 
 #include "environment.h"
+#include "ft_printf.h"
 #include "parser.h"
 
 void	close_fd(int fd)
@@ -31,21 +32,28 @@ int	duplicate_fd(int fd)
 	{
 		new = dup(fd);
 		if (new == -1)
-			error("Couldn't duplicate a file descriptor");
+		{
+			ft_printf(STDOUT_FILENO, "minishell: Couldn't duplicate a file descriptor");
+			return (-2);
+		}
 	}
 	else
 		new = -1;
 	return (new);
 }
 
-void	redirect_fd(int src, int dst)
+bool	redirect_fd(int src, int dst)
 {
 	if (src == -1)
-		return ;
+		return (true);
 	close_fd(dst);
 	if (dup2(src, dst) == -1)
-		error("Couldn't redirect a file descriptor");
+	{
+		ft_printf(STDOUT_FILENO, "minishell: Couldn't redirect a file descriptor");
+		return (false);
+	}
 	close_fd(src);
+	return (true);
 }
 
 t_result	visit_node_internal(

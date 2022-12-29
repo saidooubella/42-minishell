@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/27 11:17:22 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/06 13:56:23 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/29 18:34:23 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,8 +51,10 @@ void	to_be_closed_add(t_to_be_closed	*element, int fd)
 bool	resolve_program_io(
 	t_environment *env, t_command_node *node, int in, int out)
 {
-	redirect_fd(out, STDOUT_FILENO);
-	redirect_fd(in, STDIN_FILENO);
+	if (!redirect_fd(out, STDOUT_FILENO))
+		return (false);
+	if (!redirect_fd(in, STDIN_FILENO))
+		return (false);
 	return (resolve_redirections(env, node));
 }
 

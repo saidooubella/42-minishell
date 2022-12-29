@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:35:01 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/06 15:12:02 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/29 18:33:59 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,16 +32,19 @@ t_visit_extras	visit_extras(
 	return (extras);
 }
 
-static void	exec_builtin_epilogue(char **args, int stdin_copy, int stdout_copy)
+static bool	exec_builtin_epilogue(char **args, int stdin_copy, int stdout_copy)
 {
 	char		**temp;
 
-	redirect_fd(stdin_copy, STDIN_FILENO);
-	redirect_fd(stdout_copy, STDOUT_FILENO);
+	if (!redirect_fd(stdin_copy, STDIN_FILENO))
+		return (false);
+	if (!redirect_fd(stdout_copy, STDOUT_FILENO))
+		return (false);
 	temp = args;
 	while (*temp)
 		free(*temp++);
 	free(args);
+	return (true);
 }
 
 static t_result	exec_builtin(
@@ -56,9 +59,17 @@ static t_result	exec_builtin(
 
 	args = unwrap_args(env, node, &size, false);
 	stdin_copy = duplicate_fd(STDIN_FILENO);
+	if (stdin_copy == -2)
+		return (result_create(ERROR, 0));
 	stdout_copy = duplicate_fd(STDOUT_FILENO);
+	if (stdout_copy == -2)
+		return (result_create(ERROR, 0));
 	extra.in = duplicate_fd(extra.in);
+	if (extra.in == -2)
+		return (result_create(ERROR, 0));
 	extra.out = duplicate_fd(extra.out);
+	if (extra.out == -2)
+		return (result_create(ERROR, 0));
 	if (resolve_program_io(env, node, extra.in, extra.out))
 	{
 		if (extra.enforce_fork)
@@ -71,7 +82,8 @@ static t_result	exec_builtin(
 		result = result_create(EXIT_STATUS, 1);
 	if (extra.enforce_fork && extra.should_wait)
 		result = await_process(result);
-	exec_builtin_epilogue(args, stdin_copy, stdout_copy);
+	if (!exec_builtin_epilogue(args, stdin_copy, stdout_copy))
+		return (result_create(ERROR, false));
 	return (result);
 }
 
@@ -119,7 +131,10 @@ t_result	visit_command_node(
 	}
 	pid = fork();
 	if (pid == -1)
-		error("Couldn't fork a child process");
+	{
+		ft_printf(STDOUT_FILENO, "minishell: Couldn't fork a child process\n");
+		return (result_create(ERROR, 0));
+	}
 	if (pid == 0)
 	{
 		if (signal(SIGQUIT, SIG_DFL) == SIG_ERR)

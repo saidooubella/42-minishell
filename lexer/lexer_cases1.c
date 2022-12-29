@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:28:08 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/06 16:24:18 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/29 18:23:44 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,11 @@ bool	lexer_tokenize_identifier(t_lexer *lexer, t_tokens *tokens)
 	size_t	start;
 
 	lexer_tokenize_token(lexer, tokens, DOLLAR, 1);
+	if (lexer_current(lexer) == '"')
+	{
+		tokens_smart_add(lexer, tokens, string_duplicate(""), VARIABLE);
+		return (true);
+	}
 	start = lexer->index;
 	if (lexer_current(lexer) == '?')
 		lexer->index++;

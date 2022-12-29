@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/30 21:04:25 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/06 14:12:29 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/29 17:30:09 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 
 #include "string_utils.h"
 #include "interpreter.h"
+#include "ft_printf.h"
 #include "builtins.h"
 #include "utils.h"
 
@@ -47,7 +48,10 @@ t_result	forked_builtin(
 
 	pid = fork();
 	if (pid == -1)
-		error("Couldn't fork a child process");
+	{
+		ft_printf(STDOUT_FILENO, "minishell: Couldn't fork a child process\n");
+		return (result_create(ERROR, 0));
+	}
 	if (pid == 0)
 		exit(builtin->block(env, size, args));
 	return (result_create(PID, pid));

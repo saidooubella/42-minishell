@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:36:24 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/06 16:23:15 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/29 17:35:20 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,14 +36,20 @@ t_result	visit_pipe_node(
 	t_result	result;
 
 	if (pipe(read_write) == -1)
-		error("Failed to create a pipe");
+	{
+		ft_printf(STDOUT_FILENO, "minishell: Failed to create a pipe\n");
+		return (result_create(ERROR, 0));
+	}
 	to_be_closed_add(tbc, read_write[0]);
-	visit_node_internal(env, node->left, tbc,
-		visit_extras(extra.in, read_write[1], false, true));
+	if (visit_node_internal(env, node->left, tbc,
+		visit_extras(extra.in, read_write[1], false, true)).type == ERROR)
+		return (result_create(ERROR, 0));
 	tbc->size--;
 	to_be_closed_add(tbc, read_write[1]);
 	result = visit_node_internal(env, node->right, tbc,
 			visit_extras(read_write[0], extra.out, false, true));
+	if (result.type == ERROR)
+		return (result_create(ERROR, 0));
 	tbc->size--;
 	close_fd(read_write[0]);
 	close_fd(read_write[1]);
@@ -67,7 +73,7 @@ t_result	visit_conjuction_node(
 	{
 		res = visit_node_internal(env, node->left, tbc,
 				visit_extras(extra.in, extra.out, true, extra.enforce_fork));
-		if (res.type == EXIT_STATUS && res.extra != 0)
+		if (res.type == ERROR || (res.type == EXIT_STATUS && res.extra != 0))
 			return (res);
 		return (visit_node_internal(env, node->right, tbc, extra));
 	}
@@ -75,7 +81,7 @@ t_result	visit_conjuction_node(
 	{
 		res = visit_node_internal(env, node->left, tbc,
 				visit_extras(extra.in, extra.out, true, extra.enforce_fork));
-		if (res.type == EXIT_STATUS && res.extra == 0)
+		if (res.type == ERROR || (res.type == EXIT_STATUS && res.extra == 0))
 			return (res);
 		return (visit_node_internal(env, node->right, tbc, extra));
 	}

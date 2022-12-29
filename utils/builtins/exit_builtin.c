@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:22:00 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/25 17:46:43 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/29 17:59:32 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,11 +31,6 @@ static int	exit_cont(size_t argc, char	*arg, int64_t exit_code, bool error)
 	{
 		ft_printf(STDERR_FILENO, "exit: too many arguments\n");
 		return (1);
-	}
-	else
-	{
-		exit_code = 255;
-		ft_printf(STDERR_FILENO, "exit: %s: numeric argument required\n", arg);
 	}
 	exit(exit_code & 0xFF);
 	return (0);
