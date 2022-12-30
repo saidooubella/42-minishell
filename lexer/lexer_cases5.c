@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:35:47 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/29 18:20:04 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/29 20:08:33 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ bool	is_identifier(t_lexer *lexer)
 {
 	return (lexer_current(lexer) == '$' && (lexer_ahead(lexer) == '?'
 			|| lexer_ahead(lexer) == '"'
+			|| lexer_ahead(lexer) == '\''
 			|| is_identifier_start(lexer_ahead(lexer))));
 }
 

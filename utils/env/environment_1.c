@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/15 11:23:01 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/20 21:48:00 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/29 20:50:39 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,9 @@ void	initilize_defaults(t_environment *env)
 	symbol.name = string_create("_", false);
 	symbol.value = string_create("/usr/bin/env", false);
 	env_put_var(env, symbol, true, true);
+	symbol.name = string_create("OLDPWD", false);
+	symbol.value = string_create(NULL, false);
+	env_put_var(env, symbol, true, false);
 }
 
 void	fill_environment(t_environment *environment, char **env)

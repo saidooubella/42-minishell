@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:36:24 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/29 17:35:20 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/29 21:44:52 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,20 @@ t_result	visit_parent_node(
 	return (visit_node_internal(env, node->expression, tbc, extra));
 }
 
+void	visit_pipe_node_epilogue(
+	int *read_write, t_visit_extras extra, t_result *result)
+{
+	close_fd(read_write[0]);
+	close_fd(read_write[1]);
+	if (extra.should_wait)
+	{
+		*result = await_process(*result);
+		while (wait(NULL) != -1)
+			;
+	}
+	g_globals.in_pipe_node = true;
+}
+
 t_result	visit_pipe_node(
 	t_environment *env, t_pipe_node *node,
 	t_to_be_closed *tbc, t_visit_extras extra)
@@ -42,7 +56,7 @@ t_result	visit_pipe_node(
 	}
 	to_be_closed_add(tbc, read_write[0]);
 	if (visit_node_internal(env, node->left, tbc,
-		visit_extras(extra.in, read_write[1], false, true)).type == ERROR)
+			visit_extras(extra.in, read_write[1], false, true)).type == ERROR)
 		return (result_create(ERROR, 0));
 	tbc->size--;
 	to_be_closed_add(tbc, read_write[1]);
@@ -51,15 +65,7 @@ t_result	visit_pipe_node(
 	if (result.type == ERROR)
 		return (result_create(ERROR, 0));
 	tbc->size--;
-	close_fd(read_write[0]);
-	close_fd(read_write[1]);
-	if (extra.should_wait)
-	{
-		result = await_process(result);
-		while (wait(NULL) != -1)
-			;
-	}
-	g_globals.in_pipe_node = true;
+	visit_pipe_node_epilogue(read_write, extra, &result);
 	return (result);
 }
 

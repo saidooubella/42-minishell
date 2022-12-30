@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/27 11:33:32 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/29 18:30:34 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/29 21:26:03 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,8 @@ int	duplicate_fd(int fd)
 		new = dup(fd);
 		if (new == -1)
 		{
-			ft_printf(STDOUT_FILENO, "minishell: Couldn't duplicate a file descriptor");
+			ft_printf(STDOUT_FILENO,
+				"minishell: Couldn't duplicate a file descriptor");
 			return (-2);
 		}
 	}
@@ -49,7 +50,8 @@ bool	redirect_fd(int src, int dst)
 	close_fd(dst);
 	if (dup2(src, dst) == -1)
 	{
-		ft_printf(STDOUT_FILENO, "minishell: Couldn't redirect a file descriptor");
+		ft_printf(STDOUT_FILENO,
+			"minishell: Couldn't redirect a file descriptor");
 		return (false);
 	}
 	close_fd(src);

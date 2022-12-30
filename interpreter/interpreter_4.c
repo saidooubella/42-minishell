@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:35:01 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/29 18:33:59 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/30 14:46:26 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include "exec_resolver.h"
 #include "entry_point.h"
 #include "interpreter.h"
 #include "ft_printf.h"
@@ -51,68 +50,27 @@ static t_result	exec_builtin(
 	t_environment *env, t_command_node *node,
 	t_visit_extras extra, t_builtin *builtin)
 {
-	int			stdout_copy;
-	int			stdin_copy;
-	char		**args;
-	size_t		size;
-	t_result	result;
+	t_exec_locals	locals;
 
-	args = unwrap_args(env, node, &size, false);
-	stdin_copy = duplicate_fd(STDIN_FILENO);
-	if (stdin_copy == -2)
-		return (result_create(ERROR, 0));
-	stdout_copy = duplicate_fd(STDOUT_FILENO);
-	if (stdout_copy == -2)
-		return (result_create(ERROR, 0));
-	extra.in = duplicate_fd(extra.in);
-	if (extra.in == -2)
-		return (result_create(ERROR, 0));
-	extra.out = duplicate_fd(extra.out);
-	if (extra.out == -2)
+	if (!exec_builtin_prologue(env, node, &extra, &locals))
 		return (result_create(ERROR, 0));
 	if (resolve_program_io(env, node, extra.in, extra.out))
 	{
 		if (extra.enforce_fork)
-			result = forked_builtin(env, builtin, args, size);
+			locals.result = forked_builtin(env,
+					builtin, locals.args, locals.size);
 		else
-			result = result_create(EXIT_STATUS,
-					builtin->block(env, size, args));
+			locals.result = result_create(EXIT_STATUS,
+					builtin->block(env, locals.size, locals.args));
 	}
 	else
-		result = result_create(EXIT_STATUS, 1);
+		locals.result = result_create(EXIT_STATUS, 1);
 	if (extra.enforce_fork && extra.should_wait)
-		result = await_process(result);
-	if (!exec_builtin_epilogue(args, stdin_copy, stdout_copy))
+		locals.result = await_process(locals.result);
+	if (!exec_builtin_epilogue(locals.args,
+			locals.stdin_copy, locals.stdout_copy))
 		return (result_create(ERROR, false));
-	return (result);
-}
-
-static void	exec_program(
-	t_environment *env, t_command_node *node, t_visit_extras extra)
-{
-	char	**args;
-	char	**envp;
-	char	*executable_path;
-	size_t	size;
-
-	if (!resolve_program_io(env, node, extra.in, extra.out))
-		exit(1);
-	if (node->args_size > 0)
-	{
-		args = unwrap_args(env, node, &size, true);
-		envp = unwrap_env(env->symbols, env->symbols_size);
-		executable_path = resolve_executable(env, args[0]);
-		if (executable_path != NULL)
-			execve(executable_path, args, envp);
-		else
-			errno = ENOENT;
-		ft_printf(2, "minishell: %s: %s\n", args[0], strerror(errno));
-		if (errno == ENOENT)
-			exit(127);
-		if (errno == EACCES)
-			exit(126);
-	}
-	exit(255);
+	return (locals.result);
 }
 
 t_result	visit_command_node(
@@ -120,7 +78,6 @@ t_result	visit_command_node(
 	t_to_be_closed *tbc, t_visit_extras extra)
 {
 	t_builtin	*builtin;
-	size_t		index;
 	int			pid;
 
 	if (node->args_size > 0)
@@ -136,14 +93,7 @@ t_result	visit_command_node(
 		return (result_create(ERROR, 0));
 	}
 	if (pid == 0)
-	{
-		if (signal(SIGQUIT, SIG_DFL) == SIG_ERR)
-			error("Error: Failed to register a signal");
-		index = -1;
-		while (++index < tbc->size)
-			close_fd(tbc->fds[index]);
-		exec_program(env, node, extra);
-	}
+		child_exec(env, node, tbc, extra);
 	if (extra.should_wait)
 		return (await_process(result_create(PID, pid)));
 	return (result_create(PID, pid));

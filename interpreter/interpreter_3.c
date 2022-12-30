@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 17:31:19 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/29 18:32:09 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/29 21:29:04 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,29 +101,24 @@ bool	resolve_redirections(
 {
 	t_redirection	redirect;
 	size_t			index;
+	bool			res;
 
 	index = -1;
 	while (++index < node->redirections_size)
 	{
 		redirect = node->redirections[index];
 		if (redirect.type == INPUT)
-		{
-			if (!redirect_in(env, redirect.elements))
-				return (false);
-		}
+			res = redirect_in(env, redirect.elements);
 		else if (redirect.type == OUTPUT)
-		{
-			if (!redirect_out(env, redirect.elements))
-				return (false);
-		}
+			res = redirect_out(env, redirect.elements);
 		else if (redirect.type == HEREDOC)
-		{
-			if (!redirect_heredoc(env, redirect.elements))
-				return (false);
-		}
+			res = redirect_heredoc(env, redirect.elements);
 		else if (redirect.type == APPEND)
-			if (!redirect_append_out(env, redirect.elements))
-				return (false);
+			res = redirect_append_out(env, redirect.elements);
+		else
+			error("Illegal state in 'resolve_redirections'");
+		if (!res)
+			return (false);
 	}
 	return (true);
 }

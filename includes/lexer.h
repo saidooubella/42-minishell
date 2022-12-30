@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:19:18 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/06 15:58:00 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/29 20:29:02 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ typedef struct s_lexer
 	size_t			index;
 	size_t			whitespace_start;
 	size_t			whitespace_end;
+	bool			within_str;
 }	t_lexer;
 
 typedef bool				(*t_apply)(t_lexer *lexer, t_tokens *tokens);

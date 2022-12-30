@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/18 13:08:30 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/06 15:37:14 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/30 12:56:45 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include <stddef.h>
 
 # include "free_aware_string.h"
+# include "string_builder.h"
 
 typedef struct s_environment	t_environment;
 
@@ -46,6 +47,10 @@ typedef struct s_optional_elements
 	t_elements	*elements;
 	bool		present;
 }	t_optional_elements;
+
+void				handle_variable(
+						t_environment *env, t_string_builder *builder,
+						t_elements *elements, size_t index);
 
 t_element			element_create(t_string value, t_element_type type,
 						bool expandable, bool in_string);

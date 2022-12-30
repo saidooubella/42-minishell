@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:08:51 by soubella          #+#    #+#             */
-/*   Updated: 2022/11/30 10:44:39 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/29 20:29:14 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@ t_lexer	*lexer_new(t_environment *env, char *content)
 		memory_error();
 	lexer->length = string_length(content);
 	lexer->cases = init_lexer_cases();
+	lexer->within_str = false;
 	lexer->content = content;
 	lexer->index = 0;
 	lexer->env = env;

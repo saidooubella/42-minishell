@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/07 10:40:35 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/29 18:31:20 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/30 14:45:30 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,9 +51,21 @@ typedef struct s_to_be_closed
 	size_t	size;
 }	t_to_be_closed;
 
+typedef struct s_exec_locals
+{
+	int			stdout_copy;
+	int			stdin_copy;
+	char		**args;
+	size_t		size;
+	t_result	result;
+}	t_exec_locals;
+
 void			to_be_closed_add(t_to_be_closed	*element, int fd);
 t_to_be_closed	*to_be_closed_new(void);
 
+void			child_exec(
+					t_environment *env, t_command_node *node,
+					t_to_be_closed *tbc, t_visit_extras extra);
 t_result		await_process(t_result result);
 bool			redirect_fd(int src, int dst);
 int				duplicate_fd(int fd);
@@ -65,6 +77,9 @@ bool			is_file_ambiguous(t_elements *elements, t_environment *env);
 bool			resolve_program_io(
 					t_environment *env, t_command_node *node,
 					int in, int out);
+bool			exec_builtin_prologue(
+					t_environment *env, t_command_node *node,
+					t_visit_extras *extra, t_exec_locals *locals);
 
 char			**unwrap_args(
 					t_environment *env, t_command_node *node,

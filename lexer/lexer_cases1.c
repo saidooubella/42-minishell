@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/04 10:28:08 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/29 18:23:44 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/29 22:20:07 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ bool	lexer_tokenize_identifier(t_lexer *lexer, t_tokens *tokens)
 	size_t	start;
 
 	lexer_tokenize_token(lexer, tokens, DOLLAR, 1);
-	if (lexer_current(lexer) == '"')
+	if (lexer_current(lexer) == '"' || lexer_current(lexer) == '\'')
 	{
 		tokens_smart_add(lexer, tokens, string_duplicate(""), VARIABLE);
 		return (true);
@@ -82,12 +82,13 @@ bool	lexer_tokenize_raw_string(t_lexer *lexer, t_tokens *tokens)
 	bool	found;
 
 	lexer_tokenize_token(lexer, tokens, OPEN_SINGLE_QUOTE, 1);
+	lexer->within_str = true;
 	start = lexer->index;
 	while (!lexer_reached_end(lexer) && lexer_current(lexer) != '\'')
 		lexer->index += 1;
-	tokens_smart_add(lexer, tokens, substring(lexer->content,
-			start, lexer->index), WORD);
+	tokens_add(tokens, substring(lexer->content, start, lexer->index), WORD);
 	found = lexer_expect(lexer, '\'', "unterminated string literal");
+	lexer->within_str = false;
 	if (found)
 		lexer_tokenize_token(lexer, tokens, CLOSE_SINGLE_QUOTE, 1);
 	return (found);
@@ -99,24 +100,13 @@ bool	lexer_tokenize_string(t_lexer *lexer, t_tokens *tokens)
 	bool	found;
 
 	lexer_tokenize_token(lexer, tokens, OPEN_DOUBLE_QUOTE, 1);
-	start = lexer->index;
-	while (!lexer_reached_end(lexer) && lexer_current(lexer) != '"')
-	{
-		if (is_identifier(lexer))
-		{
-			if (lexer->index - start > 0)
-				tokens_smart_add(lexer, tokens, substring(lexer->content,
-						start, lexer->index), WORD);
-			lexer_tokenize_identifier(lexer, tokens);
-			start = lexer->index;
-		}
-		else
-			lexer->index++;
-	}
+	lexer->within_str = true;
+	start = tokenize_string(lexer, tokens, lexer->index);
 	if (lexer->index - start > 0)
-		tokens_smart_add(lexer, tokens, substring(lexer->content,
+		tokens_add(tokens, substring(lexer->content,
 				start, lexer->index), WORD);
 	found = lexer_expect(lexer, '"', "unterminated string literal");
+	lexer->within_str = false;
 	if (found)
 		lexer_tokenize_token(lexer, tokens, CLOSE_DOUBLE_QUOTE, 1);
 	return (found);

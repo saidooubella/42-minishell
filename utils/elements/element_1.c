@@ -6,7 +6,7 @@
 /*   By: soubella <soubella@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/25 14:35:12 by soubella          #+#    #+#             */
-/*   Updated: 2022/12/03 15:24:02 by soubella         ###   ########.fr       */
+/*   Updated: 2022/12/30 11:12:39 by soubella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,11 +42,7 @@ void	handle_variable(
 	else
 	{
 		value = env_get_var(env, var->value.value, "");
-		if (!var->in_string)
-			value = string_trim(value, index > 0, index < elements->size - 1);
 		string_builder_append_cstring(builder, value);
-		if (!var->in_string)
-			free(value);
 	}
 }
 
